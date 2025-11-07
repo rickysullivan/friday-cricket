@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "Kids Cricket Game Tracker - Outdoor mobile app for tracking children's cricket games with score keeping, rule enforcement, and offline-first design"
 
+## Clarifications
+
+### Session 2025-11-07
+
+- Q: Should the system track wicket dismissal types (caught, bowled, run out, etc.) or just count wickets? → A: Track wickets as simple count only (no dismissal type details)
+- Q: Can users edit scoring events beyond the single-level undo, or is historical data immutable? → A: Undo only (single-level, most recent event)
+- Q: Should player names be unique within a team, or can duplicates exist? → A: Names must be unique within team
+- Q: Should local data storage use encryption, passcode protection, or simple unencrypted storage? → A: Offline-first local storage with optional cloud synchronization
+- Q: Should the app support multi-device concurrent scoring for the same match? → A: Multi-device concurrent scoring with conflict-free synchronization
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Create and Score a Match (Priority: P1)
@@ -104,6 +114,7 @@ The system must handle special cricket events including bad balls (leading to te
 - What happens in the event of a tie? System displays "Runs ÷ Wickets = Average" calculation for tiebreaker comparison.
 - What happens when device storage is full? System displays an error and prevents new game creation until space is freed.
 - What happens when battery dies during a match? Autosave ensures all data up to the last event is preserved for later resume.
+- What happens when a scoring error is discovered after multiple balls have been bowled? Only the most recent event can be undone; older events are immutable to prevent score tampering.
 
 ## Requirements *(mandatory)*
 
@@ -112,7 +123,7 @@ The system must handle special cricket events including bad balls (leading to te
 #### Game Setup and Configuration
 
 - **FR-001**: System MUST allow users to create a new game by entering two team names, venue (optional), and date
-- **FR-002**: System MUST allow users to add player names to each team with a minimum of 8 players per team
+- **FR-002**: System MUST allow users to add player names to each team with a minimum of 8 players per team; player names must be unique within each team
 - **FR-003**: System MUST auto-generate batting pairs with a default allocation of 4 overs per pair (editable by user)
 - **FR-004**: System MUST auto-generate bowling rotation ensuring each player bowls at least 1 over and no player bowls consecutive overs
 - **FR-005**: System MUST allow users to configure the number of overs per innings (default 16, editable)
@@ -121,12 +132,12 @@ The system must handle special cricket events including bad balls (leading to te
 #### Real-Time Scoring
 
 - **FR-007**: System MUST provide quick-tap buttons for recording runs (0, 1, 2, 3, 4, 6)
-- **FR-008**: System MUST provide quick-tap buttons for recording wickets
+- **FR-008**: System MUST provide quick-tap buttons for recording wickets (as simple count without dismissal type tracking)
 - **FR-009**: System MUST provide quick-tap buttons for recording extras (wide, no-ball)
 - **FR-010**: System MUST provide a workflow for recording "bad ball" events that trigger a tee free hit
 - **FR-011**: System MUST automatically advance to the next over after 6 valid balls are bowled
 - **FR-012**: System MUST display current score, wickets, overs, and batting pair information prominently at all times
-- **FR-013**: System MUST provide an "Undo" button that reverses the most recent scoring event
+- **FR-013**: System MUST provide an "Undo" button that reverses the most recent scoring event (single-level only; older events are immutable)
 
 #### Rule Enforcement
 
@@ -144,34 +155,35 @@ The system must handle special cricket events including bad balls (leading to te
 - **FR-022**: System MUST store all game data locally on the device with no network dependency
 - **FR-023**: System MUST allow users to resume the most recent in-progress game from the home screen
 - **FR-024**: System MUST preserve all game data even if the app crashes or is force-closed
+- **FR-025**: System MUST support multi-device concurrent scoring with conflict-free synchronization for collaborative editing
 
 #### Match History and Export
 
-- **FR-025**: System MUST maintain a local history of all games (completed and in-progress)
-- **FR-026**: System MUST display match history with date, team names, and result summary
-- **FR-027**: System MUST allow users to view detailed statistics for any completed match
-- **FR-028**: System MUST allow users to export completed match data as PDF (formatted like a paper scoresheet)
-- **FR-029**: System MUST allow users to export completed match data as CSV (one row per scoring event)
-- **FR-030**: System MUST allow users to duplicate past matches to create new games with pre-filled teams and players
-- **FR-031**: System MUST allow users to import game data from JSON files for data portability
+- **FR-026**: System MUST maintain a local history of all games (completed and in-progress)
+- **FR-027**: System MUST display match history with date, team names, and result summary
+- **FR-028**: System MUST allow users to view detailed statistics for any completed match
+- **FR-029**: System MUST allow users to export completed match data as PDF (formatted like a paper scoresheet)
+- **FR-030**: System MUST allow users to export completed match data as CSV (one row per scoring event)
+- **FR-031**: System MUST allow users to duplicate past matches to create new games with pre-filled teams and players
+- **FR-032**: System MUST allow users to import game data from JSON files for data portability
 
 #### Outdoor Usability
 
-- **FR-032**: System MUST use high-contrast color schemes optimized for bright outdoor sunlight
-- **FR-033**: System MUST provide a manual "Bright Mode" toggle for extreme lighting conditions
-- **FR-034**: System MUST use touch targets at least 56px tall to accommodate gloved or sweaty fingers
-- **FR-035**: System MUST use large, bold fonts (18pt or greater, semibold weight) with minimal text
-- **FR-036**: System MUST provide strong haptic feedback for every user tap
-- **FR-037**: System MUST support one-handed operation for all primary scoring functions
+- **FR-033**: System MUST use high-contrast color schemes optimized for bright outdoor sunlight
+- **FR-034**: System MUST provide a manual "Bright Mode" toggle for extreme lighting conditions
+- **FR-035**: System MUST use touch targets at least 56px tall to accommodate gloved or sweaty fingers
+- **FR-036**: System MUST use large, bold fonts (18pt or greater, semibold weight) with minimal text
+- **FR-037**: System MUST provide strong haptic feedback for every user tap
+- **FR-038**: System MUST support one-handed operation for all primary scoring functions
 
 #### User Interface and Navigation
 
-- **FR-038**: System MUST provide a home screen with options for New Game, Resume Last Game, and View History
-- **FR-039**: System MUST provide tabbed views during innings for Overs, Batting Pairs, Bowlers, and Fielding
-- **FR-040**: System MUST use slide-in panels instead of modals to avoid blocking content
-- **FR-041**: System MUST display large numeric totals centered for visibility
-- **FR-042**: System MUST use color coding (Runs = green, Wickets = red, Extras = orange) for quick recognition
-- **FR-043**: System MUST display progress indicators for overs completed and batting pair limits
+- **FR-039**: System MUST provide a home screen with options for New Game, Resume Last Game, and View History
+- **FR-040**: System MUST provide tabbed views during innings for Overs, Batting Pairs, Bowlers, and Fielding
+- **FR-041**: System MUST use slide-in panels instead of modals to avoid blocking content
+- **FR-042**: System MUST display large numeric totals centered for visibility
+- **FR-043**: System MUST use color coding (Runs = green, Wickets = red, Extras = orange) for quick recognition
+- **FR-044**: System MUST display progress indicators for overs completed and batting pair limits
 
 ### Key Entities
 
@@ -179,7 +191,7 @@ The system must handle special cricket events including bad balls (leading to te
 
 - **Team**: Represents a cricket team with a name and a list of players. Each game has exactly two teams.
 
-- **Player**: Represents an individual player identified by a unique ID and name. Players belong to a team and participate in batting and bowling.
+- **Player**: Represents an individual player identified by a unique ID and name. Players belong to a team and participate in batting and bowling. Player names must be unique within each team.
 
 - **Innings**: Represents one team's batting period including the batting team ID, bowling team ID, planned overs (16), completed overs, and batting pairs. Each innings tracks all scoring events.
 
@@ -187,7 +199,7 @@ The system must handle special cricket events including bad balls (leading to te
 
 - **Over**: Represents a set of 6 valid deliveries bowled by one bowler, including the bowler ID, over number, and list of scoring events.
 
-- **Over Event**: Represents a single delivery or extra including run (0-6), wicket, wide, no-ball, or bad ball with free hit result.
+- **Over Event**: Represents a single delivery or extra including run (0-6), wicket (as simple count without dismissal type), wide, no-ball, or bad ball with free hit result.
 
 - **Match History Entry**: Represents a summary of a completed or in-progress game for display in history list, including game ID, date, team names, result, and completion status.
 
@@ -213,8 +225,9 @@ The system must handle special cricket events including bad balls (leading to te
 - Users have basic familiarity with cricket scoring terminology (runs, wickets, overs, batting pairs, bowling rotation)
 - Devices will be smartphones running iOS 15+ or Android 11+ with standard screen sizes (5-7 inches diagonal)
 - Users will primarily use the app outdoors in bright sunlight with potential for glare and difficult viewing conditions
-- Network connectivity is unreliable or unavailable during matches, requiring full offline functionality
+- Network connectivity is unreliable or unavailable during matches, requiring full offline functionality with optional cloud sync
 - Users are typically coaches or parents managing children's cricket teams (Friday Cricket format)
 - Most matches follow the standard Friday Cricket rules: 16 overs, batting pairs limited to 4 overs, everyone must bowl
 - Device storage will have sufficient space for typical usage (100+ matches stored locally)
-- Users understand that match data is stored only on their device unless manually exported and shared
+- Data persistence architecture provides offline-first local storage with optional cloud synchronization when connectivity is available
+- Multi-device collaborative scoring uses conflict-free synchronization mechanisms enabling multiple scorers to work simultaneously without data conflicts
