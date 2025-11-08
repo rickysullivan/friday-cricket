@@ -2,21 +2,20 @@
 ================================================================================
 SYNC IMPACT REPORT
 ================================================================================
-Version Change: N/A → 1.0.0
-Modified Principles: Initial creation - all principles new
-Added Sections:
-  - Core Principles (5 principles)
-  - Mobile-Specific Constraints
-  - Development Workflow
-  - Governance
-Removed Sections: N/A (initial version)
+Version Change: 1.0.0 → 1.0.1
+Modified Principles: None (principles unchanged)
+Clarifications:
+  - Updated Target Platforms: Android 11+ → Android 13+ (Expo SDK 54 compatibility)
+  - Updated Framework version: Expo SDK 51+ → Expo SDK 54+
+  - Clarified storage options: "expo-sqlite or MMKV" → "WatermelonDB (SQLite-based) or MMKV"
+Added Sections: None
+Removed Sections: None
 Templates Requiring Updates:
-  ✅ plan-template.md - Constitution Check section aligned
+  ✅ plan-template.md - Already aligned with constitution structure
   ✅ spec-template.md - User Stories structure compatible
-  ✅ tasks-template.md - Test-first approach compatible
-  ⚠ commands/*.md - No command files exist yet (acceptable for initial setup)
-Follow-up TODOs:
-  - Consider adding RATIFICATION_DATE when formally adopted by team
+  ✅ tasks-template.md - Test-first approach reflected in task generation
+  ✅ No command files in templates/ (commands are built-in slash commands)
+Follow-up TODOs: None
 ================================================================================
 -->
 
@@ -95,12 +94,12 @@ All implementation follows strict TDD workflow:
 
 ### Platform & Technology
 
-- **Framework**: Expo (React Native + TypeScript)
+- **Framework**: Expo SDK 54+ (React Native + TypeScript)
 - **Router**: Expo Router (file-based navigation)
 - **State Management**: React Context (no Redux/MobX complexity)
-- **Storage**: expo-sqlite or MMKV for persistence
-- **UI Components**: Custom components optimized for outdoor visibility (shadcn/ui-style patterns adapted)
-- **Target Platforms**: iOS 15+ and Android 11+ initially
+- **Storage**: WatermelonDB (SQLite-based) or MMKV for persistence
+- **UI Components**: Custom components optimized for outdoor visibility (high contrast, large touch targets)
+- **Target Platforms**: iOS 15+ and Android 13+ initially
 
 ### Performance Standards
 
@@ -170,4 +169,4 @@ All implementation follows strict TDD workflow:
 
 This constitution supersedes all other practices, preferences, and prior decisions. When conflicts arise, constitution principles take precedence. Complexity and violations must be justified with documented rationale showing why simpler constitutional approaches were insufficient.
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-07 | **Last Amended**: 2025-11-07
+**Version**: 1.0.1 | **Ratified**: 2025-11-07 | **Last Amended**: 2025-11-08
