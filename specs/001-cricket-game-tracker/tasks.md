@@ -42,21 +42,21 @@ This document breaks down the implementation into dependency-ordered, independen
 
 ### Tasks
 
-- [ ] T001 Initialize Expo project with TypeScript template using `npx create-expo-app@latest friday-cricket --template expo-template-blank-typescript`
-- [ ] T002 [P] Install core dependencies: `expo@~54.0.0`, `expo-router@~4.0.0`, `typescript@^5.7.0`, `react-native@0.76.x`
-- [ ] T003 [P] Install WatermelonDB: `@nozbe/watermelondb@^0.27.0` and configure native setup (iOS pods, Android gradle)
-- [ ] T004 [P] Install Supabase client: `@supabase/supabase-js@^2.46.0`
-- [ ] T005 [P] Install Yjs CRDT: `yjs@^13.6.0`, `y-expo-sqlite@^1.0.0`
-- [ ] T006 [P] Install Expo modules: `expo-haptics@~14.0.0`, `expo-print@~14.0.0`, `expo-sharing@~13.0.0`
-- [ ] T007 [P] Install testing dependencies: `jest@^29.0.0`, `@testing-library/react-native@^12.0.0`, `detox@^20.0.0`
-- [ ] T008 Configure Expo Router file-based navigation in app.json with `"scheme": "friday-cricket"`
-- [ ] T009 Create `.env` file with placeholders for `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-- [ ] T010 Create project structure directories: `app/`, `src/components/`, `src/models/`, `src/services/`, `src/hooks/`, `src/context/`, `src/utils/`, `src/sync/`, `tests/`
-- [ ] T011 Configure TypeScript with strict mode in tsconfig.json: `"strict": true`, `"noUncheckedIndexedAccess": true`
-- [ ] T012 Configure Jest for React Native testing in jest.config.js with `preset: "react-native"`
+- [X] T001 Initialize Expo project with TypeScript template using `npx create-expo-app@latest friday-cricket --template expo-template-blank-typescript`
+- [X] T002 [P] Install core dependencies: `expo@~54.0.0`, `expo-router@~4.0.0`, `typescript@^5.7.0`, `react-native@0.76.x`
+- [X] T003 [P] Install WatermelonDB: `@nozbe/watermelondb@^0.27.0` and configure native setup (iOS pods, Android gradle)
+- [X] T004 [P] Install Supabase client: `@supabase/supabase-js@^2.46.0`
+- [X] T005 [P] Install Yjs CRDT: `yjs@^13.6.0`, `y-expo-sqlite@^1.0.0`
+- [X] T006 [P] Install Expo modules: `expo-haptics@~14.0.0`, `expo-print@~14.0.0`, `expo-sharing@~13.0.0`
+- [X] T007 [P] Install testing dependencies: `jest@^29.0.0`, `@testing-library/react-native@^12.0.0`, `detox@^20.0.0`
+- [X] T008 Configure Expo Router file-based navigation in app.json with `"scheme": "friday-cricket"`
+- [X] T009 Create `.env` file with placeholders for `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- [X] T010 Create project structure directories: `app/`, `src/components/`, `src/models/`, `src/services/`, `src/hooks/`, `src/context/`, `src/utils/`, `src/sync/`, `tests/`
+- [X] T011 Configure TypeScript with strict mode in tsconfig.json: `"strict": true`, `"noUncheckedIndexedAccess": true`
+- [X] T012 Configure Jest for React Native testing in jest.config.js with `preset: "react-native"`
 - [ ] T013 Configure Detox for E2E testing in .detoxrc.js with iOS and Android configurations
-- [ ] T014 Create src/utils/constants.ts with outdoor-optimized theme colors (black #000000, white #FFFFFF, green success, red error, orange warning)
-- [ ] T015 Update .gitignore to exclude `.env`, `node_modules/`, `ios/Pods/`, `.expo/`
+- [X] T014 Create src/utils/constants.ts with outdoor-optimized theme colors (black #000000, white #FFFFFF, green success, red error, orange warning)
+- [X] T015 Update .gitignore to exclude `.env`, `node_modules/`, `ios/Pods/`, `.expo/`
 
 ---
 

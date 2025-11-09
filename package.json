@@ -1,0 +1,40 @@
+{
+  "name": "friday-cricket",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "expo": "~54.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "expo-router": "~4.0.0",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "@nozbe/watermelondb": "^0.27.0",
+    "@supabase/supabase-js": "^2.46.0",
+    "yjs": "^13.6.0",
+    "expo-haptics": "~14.0.0",
+    "expo-print": "~14.0.0",
+    "expo-sharing": "~13.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@babel/plugin-proposal-decorators": "^7.24.0",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "@types/react": "~18.3.0",
+    "typescript": "^5.7.0",
+    "jest": "^29.7.0",
+    "@testing-library/react-native": "^12.0.0",
+    "@testing-library/jest-native": "^5.4.0",
+    "jest-expo": "~52.0.0"
+  },
+  "private": true
+}
