@@ -1,2 +1,8 @@
 .claude
 .speckit-github
+
+# macOS files
+.DS_Store
+
+# Archives
+*.tar.gz
