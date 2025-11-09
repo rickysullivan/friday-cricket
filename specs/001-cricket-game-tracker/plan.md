@@ -1,3 +1,13 @@
+---
+github_issue: 178
+title: Implementation Plan: Kids Cricket Game Tracker
+status: planning
+feature: plan
+labels: plan, architecture
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # Implementation Plan: Kids Cricket Game Tracker
 
 **Branch**: `001-cricket-game-tracker` | **Date**: 2025-11-07 | **Spec**: [spec.md](./spec.md)

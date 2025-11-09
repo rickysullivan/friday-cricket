@@ -1,3 +1,13 @@
+---
+github_issue: 110
+title: Quickstart Guide: Kids Cricket Game Tracker
+status: planning
+feature: quickstart
+labels: documentation
+created: 2025-11-08
+updated: 2025-11-08
+---
+
 # Quickstart Guide: Kids Cricket Game Tracker
 
 **Feature**: 001-cricket-game-tracker

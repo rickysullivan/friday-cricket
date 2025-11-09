@@ -1,0 +1,35 @@
+name: Sync Specs to GitHub Issues
+
+on:
+  push:
+    paths:
+      - 'specs/**/*.md'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Sync Specs to Issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
+          SPEC_DIR: ./specs
+        run: |
+          # Make scripts executable
+          chmod +x scripts/*.sh
+          
+          # Run sync
+          ./scripts/sync-to-github.sh
+      
+      - name: Commit updated specs
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add specs/
+          git diff --cached --quiet || git commit -m "Update specs with GitHub issue numbers [skip ci]"
+          git push

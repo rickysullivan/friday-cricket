@@ -1,3 +1,13 @@
+---
+github_issue: 177
+title: Data Model: Kids Cricket Game Tracker
+status: planning
+feature: data-model
+labels: data-model, architecture
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # Data Model: Kids Cricket Game Tracker
 
 **Feature**: 001-cricket-game-tracker

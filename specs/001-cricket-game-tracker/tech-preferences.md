@@ -1,3 +1,13 @@
+---
+github_issue: 109
+title: Technology Preferences (Reference)
+status: planning
+feature: tech-preferences
+labels: documentation
+created: 2025-11-08
+updated: 2025-11-08
+---
+
 # Technology Preferences (Reference)
 
 **Feature**: Kids Cricket Game Tracker

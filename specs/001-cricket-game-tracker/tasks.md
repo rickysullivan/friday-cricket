@@ -1,3 +1,13 @@
+---
+github_issue: 111
+title: Implementation Tasks: Kids Cricket Game Tracker
+status: planning
+feature: tasks
+labels: tasks, implementation
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # Implementation Tasks: Kids Cricket Game Tracker
 
 **Feature**: 001-cricket-game-tracker

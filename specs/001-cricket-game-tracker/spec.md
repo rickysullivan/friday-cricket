@@ -1,3 +1,13 @@
+---
+github_issue: 179
+title: Feature Specification: Kids Cricket Game Tracker
+status: planning
+feature: **: 001-cricket-game-tracker
+labels: specification, feature
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # Feature Specification: Kids Cricket Game Tracker
 
 **Feature Branch**: `001-cricket-game-tracker`

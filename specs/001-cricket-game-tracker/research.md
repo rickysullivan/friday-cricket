@@ -1,3 +1,13 @@
+---
+github_issue: 176
+title: Research: Kids Cricket Game Tracker
+status: planning
+feature: research
+labels: research, analysis
+created: 2025-11-07
+updated: 2025-11-07
+---
+
 # Research: Kids Cricket Game Tracker
 
 **Feature**: 001-cricket-game-tracker

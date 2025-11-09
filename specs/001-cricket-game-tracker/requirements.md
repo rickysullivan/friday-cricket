@@ -4,8 +4,8 @@ title: Specification Quality Checklist: Kids Cricket Game Tracker
 status: planning
 feature: requirements
 labels: requirements, validation
-created: 2025-11-08
-updated: 2025-11-08
+created: 2025-11-07
+updated: 2025-11-07
 ---
 
 # Specification Quality Checklist: Kids Cricket Game Tracker
