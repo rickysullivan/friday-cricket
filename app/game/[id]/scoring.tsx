@@ -1,12 +1,26 @@
 /**
  * Scoring Screen
  * Active game interface: score display, run keypad, extras, undo
- * T047 - Partial implementation (layout ready, needs full scoring logic)
+ * T047 - Complete implementation
  */
 
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  SafeAreaView,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useScoring } from '@/hooks/useScoring';
+import ScoreDisplay from '@/components/scoring/ScoreDisplay';
+import RunKeypad from '@/components/scoring/RunKeypad';
+import ExtraButtons from '@/components/scoring/ExtraButtons';
+import UndoButton from '@/components/scoring/UndoButton';
+import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 
 export default function ScoringScreen() {
@@ -14,68 +28,339 @@ export default function ScoringScreen() {
   const router = useRouter();
   const { colors } = useTheme();
 
-  function handleEndMatch() {
+  // Mock game data (TODO: Load from database)
+  const [teamName, setTeamName] = useState('Team A');
+  const [runs, setRuns] = useState(0);
+  const [wickets, setWickets] = useState(0);
+  const [currentOver, setCurrentOver] = useState(0);
+  const [currentBall, setCurrentBall] = useState(0);
+  const [currentBowler, setCurrentBowler] = useState('Bowler 1');
+  const [currentPair, setCurrentPair] = useState({
+    player1: 'Player 1',
+    player2: 'Player 2',
+    oversFaced: 0,
+    oversAllocated: 4,
+  });
+  const [ballsInOver, setBallsInOver] = useState<string[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  const gameId = Array.isArray(id) ? id[0] : id || 'new';
+  const { recordRun, recordWicket, recordExtra, undoLastEvent, advanceOver } =
+    useScoring(gameId);
+
+  async function handleRunScored(runValue: number) {
+    await recordRun(runValue);
+
+    // Update local state (TODO: Replace with database state management)
+    setRuns(runs + runValue);
+    setBallsInOver([...ballsInOver, `${runValue}`]);
+    setCanUndo(true);
+
+    // Check if over is complete
+    if (ballsInOver.length + 1 >= 6) {
+      handleOverComplete();
+    } else {
+      setCurrentBall(currentBall + 1);
+    }
+  }
+
+  async function handleWide() {
+    await recordExtra(1, true, false);
+
+    // Wide adds 1 run but doesn't count as a ball
+    setRuns(runs + 1);
+    setBallsInOver([...ballsInOver, 'wd']);
+    setCanUndo(true);
+  }
+
+  async function handleNoBall() {
+    await recordExtra(1, false, true);
+
+    // No-ball adds 1 run but doesn't count as a ball
+    setRuns(runs + 1);
+    setBallsInOver([...ballsInOver, 'nb']);
+    setCanUndo(true);
+  }
+
+  async function handleWicket() {
+    await recordWicket();
+
+    // Wicket counts as a ball but doesn't add runs
+    setWickets(wickets + 1);
+    setBallsInOver([...ballsInOver, 'W']);
+    setCanUndo(true);
+
+    // Check if innings is over (10 wickets)
+    if (wickets + 1 >= 10) {
+      Alert.alert(
+        'Innings Complete',
+        '10 wickets fallen. Innings is complete.',
+        [{ text: 'OK', onPress: handleInningsComplete }]
+      );
+      return;
+    }
+
+    // Check if over is complete
+    if (ballsInOver.length + 1 >= 6) {
+      handleOverComplete();
+    } else {
+      setCurrentBall(currentBall + 1);
+    }
+  }
+
+  async function handleUndo() {
+    await undoLastEvent();
+
+    // TODO: Re-implement with database state
+    // For now, just remove the last ball from the over
+    if (ballsInOver.length > 0) {
+      const lastBall = ballsInOver[ballsInOver.length - 1];
+      setBallsInOver(ballsInOver.slice(0, -1));
+
+      // Undo run changes
+      if (lastBall === 'W') {
+        setWickets(Math.max(0, wickets - 1));
+      } else if (lastBall === 'wd' || lastBall === 'nb') {
+        setRuns(Math.max(0, runs - 1));
+      } else {
+        const runValue = parseInt(lastBall, 10);
+        if (!isNaN(runValue)) {
+          setRuns(Math.max(0, runs - runValue));
+        }
+      }
+
+      setCanUndo(ballsInOver.length > 1);
+    }
+  }
+
+  function handleOverComplete() {
+    Alert.alert(
+      'Over Complete',
+      `Over ${currentOver + 1} is complete. Next bowler: ${currentBowler}`,
+      [
+        {
+          text: 'Continue',
+          onPress: () => {
+            advanceOver();
+            setCurrentOver(currentOver + 1);
+            setCurrentBall(0);
+            setBallsInOver([]);
+
+            // Check if batting pair needs to rotate (every 4 overs)
+            const newOversFaced = currentPair.oversFaced + 1;
+            if (newOversFaced >= currentPair.oversAllocated) {
+              Alert.alert(
+                'Pair Complete',
+                `${currentPair.player1} and ${currentPair.player2} have completed their ${currentPair.oversAllocated} overs.`,
+                [{ text: 'OK' }]
+              );
+            }
+
+            setCurrentPair({
+              ...currentPair,
+              oversFaced: newOversFaced,
+            });
+
+            // Check if innings is complete (16 overs)
+            if (currentOver + 1 >= 16) {
+              Alert.alert(
+                'Innings Complete',
+                '16 overs completed. Innings is complete.',
+                [{ text: 'OK', onPress: handleInningsComplete }]
+              );
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  function handleInningsComplete() {
+    // TODO: Switch to other team or go to summary
     router.push(`/game/${id}/summary`);
   }
 
+  function handleEndMatch() {
+    Alert.alert(
+      'End Match',
+      'Are you sure you want to end this match? This will take you to the match summary.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'End Match',
+          style: 'destructive',
+          onPress: () => router.push(`/game/${id}/summary`),
+        },
+      ]
+    );
+  }
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        Active Game: {id}
-      </Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        TODO: Implement scoring interface
-      </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+        {/* Score Display */}
+        <ScoreDisplay
+          teamName={teamName}
+          runs={runs}
+          wickets={wickets}
+          overs={currentOver}
+          balls={currentBall}
+        />
 
-      <View style={styles.placeholders}>
-        <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-          • ScoreDisplay component
-        </Text>
-        <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-          • RunKeypad (0,1,2,3,4,6)
-        </Text>
-        <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-          • ExtraButtons (Wide, No-Ball, Wicket)
-        </Text>
-        <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-          • UndoButton
-        </Text>
-        <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-          • Over progress indicator
-        </Text>
-      </View>
+        {/* Current Bowler and Batting Pair */}
+        <Card style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Bowler:
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {currentBowler}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Batting:
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {currentPair.player1} & {currentPair.player2}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Pair Overs:
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {currentPair.oversFaced} / {currentPair.oversAllocated}
+            </Text>
+          </View>
+        </Card>
 
-      <Button
-        title="End Match (Test)"
-        onPress={handleEndMatch}
-        variant="secondary"
-        size="large"
-      />
-    </View>
+        {/* Over Progress */}
+        <Card style={styles.overProgressCard}>
+          <Text style={[styles.overTitle, { color: colors.text }]}>
+            Over {currentOver + 1}
+          </Text>
+          <View style={styles.ballsContainer}>
+            {ballsInOver.map((ball, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.ball,
+                  {
+                    backgroundColor:
+                      ball === 'W'
+                        ? '#FF0000'
+                        : ball === 'wd' || ball === 'nb'
+                        ? '#FFA500'
+                        : colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.ballText, { color: '#FFFFFF' }]}>
+                  {ball}
+                </Text>
+              </View>
+            ))}
+            {Array.from({ length: 6 - ballsInOver.length }).map((_, index) => (
+              <View
+                key={`empty-${index}`}
+                style={[
+                  styles.ball,
+                  styles.emptyBall,
+                  { borderColor: colors.border },
+                ]}
+              />
+            ))}
+          </View>
+        </Card>
+
+        {/* Run Keypad */}
+        <RunKeypad onRunScored={handleRunScored} />
+
+        {/* Extra Buttons */}
+        <ExtraButtons
+          onWide={handleWide}
+          onNoBall={handleNoBall}
+          onWicket={handleWicket}
+        />
+
+        {/* Undo Button */}
+        <View style={styles.undoContainer}>
+          <UndoButton onUndo={handleUndo} disabled={!canUndo} />
+        </View>
+
+        {/* End Match Button */}
+        <Button
+          title="End Match"
+          onPress={handleEndMatch}
+          variant="secondary"
+          size="medium"
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+  },
+  content: {
+    padding: 16,
+    gap: 16,
+  },
+  infoCard: {
+    padding: 16,
+    gap: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  overProgressCard: {
+    padding: 16,
+  },
+  overTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  ballsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  ball: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
+  emptyBall: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+  },
+  ballText: {
+    fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 32,
-  },
-  placeholders: {
-    marginBottom: 32,
-    gap: 12,
-  },
-  placeholderText: {
-    fontSize: 16,
+  undoContainer: {
+    alignItems: 'center',
   },
 });

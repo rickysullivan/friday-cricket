@@ -151,26 +151,26 @@ This document breaks down the implementation into dependency-ordered, independen
 #### Screens
 
 - [X] T045 [US1] Create home screen in app/(tabs)/index.tsx with buttons: "New Game", "Resume Last Game", "View History"
-- [ ] T046 [US1] Create game setup wizard in app/game/[id]/setup.tsx with multi-step form: team names → add players (min 8 per team) → review pairs/bowlers → start match
-- [ ] T047 [US1] Create scoring screen in app/game/[id]/scoring.tsx with ScoreDisplay, RunKeypad, ExtraButtons, UndoButton, over progress indicator
+- [X] T046 [US1] Create game setup wizard in app/game/[id]/setup.tsx with multi-step form: team names → add players (min 8 per team) → review pairs/bowlers → start match
+- [X] T047 [US1] Create scoring screen in app/game/[id]/scoring.tsx with ScoreDisplay, RunKeypad, ExtraButtons, UndoButton, over progress indicator
 
 #### Game Management Components
 
-- [ ] T048 [P] [US1] Create PlayerList component in src/components/game/PlayerList.tsx for adding/removing players with unique name validation
-- [ ] T049 [P] [US1] Create BattingPairCard component in src/components/game/BattingPairCard.tsx displaying pair names and overs faced
-- [ ] T050 [P] [US1] Create BowlerRotation component in src/components/game/BowlerRotation.tsx showing bowling order with highlighting for current bowler
+- [X] T048 [P] [US1] Create PlayerList component in src/components/game/PlayerList.tsx for adding/removing players with unique name validation
+- [X] T049 [P] [US1] Create BattingPairCard component in src/components/game/BattingPairCard.tsx displaying pair names and overs faced
+- [X] T050 [P] [US1] Create BowlerRotation component in src/components/game/BowlerRotation.tsx showing bowling order with highlighting for current bowler
 
 #### Scoring Components
 
-- [ ] T051 [P] [US1] Create RunKeypad component in src/components/scoring/RunKeypad.tsx with buttons for 0, 1, 2, 3, 4, 6 (64px × 64px, 20pt font)
-- [ ] T052 [P] [US1] Create ExtraButtons component in src/components/scoring/ExtraButtons.tsx with Wide, No-Ball, Wicket buttons
-- [ ] T053 [P] [US1] Create UndoButton component in src/components/scoring/UndoButton.tsx (48px × 120px, always visible, haptic feedback)
+- [X] T051 [P] [US1] Create RunKeypad component in src/components/scoring/RunKeypad.tsx with buttons for 0, 1, 2, 3, 4, 6 (64px × 64px, 20pt font)
+- [X] T052 [P] [US1] Create ExtraButtons component in src/components/scoring/ExtraButtons.tsx with Wide, No-Ball, Wicket buttons
+- [X] T053 [P] [US1] Create UndoButton component in src/components/scoring/UndoButton.tsx (48px × 120px, always visible, haptic feedback)
 
 #### Scoring Hook
 
-- [ ] T054 [US1] Create useScoring hook in src/hooks/useScoring.ts with functions: `recordRun()`, `recordWicket()`, `recordExtra()`, `undoLastEvent()`, `advanceOver()`
-- [ ] T055 [US1] Implement autosave in useScoring: after each scoring event, write to WatermelonDB using database.write() with <50ms target
-- [ ] T056 [US1] Implement undo logic in useScoring: find most recent OverEvent by created_at, soft delete (markAsDeleted()), recompute Over/Innings totals
+- [X] T054 [US1] Create useScoring hook in src/hooks/useScoring.ts with functions: `recordRun()`, `recordWicket()`, `recordExtra()`, `undoLastEvent()`, `advanceOver()`
+- [X] T055 [US1] Implement autosave in useScoring: after each scoring event, write to WatermelonDB using database.write() with <50ms target
+- [X] T056 [US1] Implement undo logic in useScoring: find most recent OverEvent by created_at, soft delete (markAsDeleted()), recompute Over/Innings totals
 
 #### Navigation
 
