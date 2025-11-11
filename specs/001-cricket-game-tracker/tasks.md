@@ -74,39 +74,39 @@ This document breaks down the implementation into dependency-ordered, independen
 
 #### WatermelonDB Setup
 
-- [ ] T016 Create WatermelonDB schema definition in src/models/schema.ts with tables for games, teams, players, innings, overs, over_events
-- [ ] T017 Create WatermelonDB database initialization in src/models/database.ts with SQLite adapter
-- [ ] T018 [P] Create Game model in src/models/Game.ts extending WatermelonDB Model with @field decorators
-- [ ] T019 [P] Create Team model in src/models/Team.ts with @relation to Game
-- [ ] T020 [P] Create Player model in src/models/Player.ts with @relation to Team
-- [ ] T021 [P] Create Innings model in src/models/Innings.ts with @relation to Game
-- [ ] T022 [P] Create Over model in src/models/Over.ts with @relation to Innings
-- [ ] T023 [P] Create OverEvent model in src/models/OverEvent.ts with @relation to Over
+- [X] T016 Create WatermelonDB schema definition in src/models/schema.ts with tables for games, teams, players, innings, overs, over_events
+- [X] T017 Create WatermelonDB database initialization in src/models/database.ts with SQLite adapter
+- [X] T018 [P] Create Game model in src/models/Game.ts extending WatermelonDB Model with @field decorators
+- [X] T019 [P] Create Team model in src/models/Team.ts with @relation to Game
+- [X] T020 [P] Create Player model in src/models/Player.ts with @relation to Team
+- [X] T021 [P] Create Innings model in src/models/Innings.ts with @relation to Game
+- [X] T022 [P] Create Over model in src/models/Over.ts with @relation to Innings
+- [X] T023 [P] Create OverEvent model in src/models/OverEvent.ts with @relation to Over
 
 #### React Context Providers
 
-- [ ] T024 Create ThemeContext in src/context/ThemeContext.tsx with normal/bright mode toggle state
-- [ ] T025 Create GameContext in src/context/GameContext.tsx with active game state and WatermelonDB observable queries
-- [ ] T026 Create SyncContext in src/context/SyncContext.tsx with Yjs document provider and sync status
+- [X] T024 Create ThemeContext in src/context/ThemeContext.tsx with normal/bright mode toggle state
+- [X] T025 Create GameContext in src/context/GameContext.tsx with active game state and WatermelonDB observable queries
+- [X] T026 Create SyncContext in src/context/SyncContext.tsx with Yjs document provider and sync status
 
 #### Base UI Components (Outdoor-Optimized)
 
-- [ ] T027 [P] Create Button component in src/components/ui/Button.tsx with ≥56px height, high contrast, haptic feedback on press
-- [ ] T028 [P] Create Input component in src/components/ui/Input.tsx with ≥18pt font, large focus states
-- [ ] T029 [P] Create Card component in src/components/ui/Card.tsx with high contrast borders and shadows
-- [ ] T030 [P] Create SlidePanel component in src/components/ui/SlidePanel.tsx using Animated API for slide-in from bottom
-- [ ] T031 [P] Create ScoreDisplay component in src/components/scoring/ScoreDisplay.tsx with 48pt bold font for numeric totals
+- [X] T027 [P] Create Button component in src/components/ui/Button.tsx with ≥56px height, high contrast, haptic feedback on press
+- [X] T028 [P] Create Input component in src/components/ui/Input.tsx with ≥18pt font, large focus states
+- [X] T029 [P] Create Card component in src/components/ui/Card.tsx with high contrast borders and shadows
+- [X] T030 [P] Create SlidePanel component in src/components/ui/SlidePanel.tsx using Animated API for slide-in from bottom
+- [X] T031 [P] Create ScoreDisplay component in src/components/scoring/ScoreDisplay.tsx with 48pt bold font for numeric totals
 
 #### Custom Hooks
 
-- [ ] T032 [P] Create useHaptics hook in src/hooks/useHaptics.ts wrapping expo-haptics with configurable intensity
-- [ ] T033 [P] Create useGame hook in src/hooks/useGame.ts for accessing GameContext and WatermelonDB queries
-- [ ] T034 [P] Create useTheme hook in src/hooks/useTheme.ts for accessing ThemeContext (normal/bright mode)
+- [X] T032 [P] Create useHaptics hook in src/hooks/useHaptics.ts wrapping expo-haptics with configurable intensity
+- [X] T033 [P] Create useGame hook in src/hooks/useGame.ts for accessing GameContext and WatermelonDB queries
+- [X] T034 [P] Create useTheme hook in src/hooks/useTheme.ts for accessing ThemeContext (normal/bright mode)
 
 #### Root Layout
 
-- [ ] T035 Create app/_layout.tsx with Expo Router Stack and context providers (Theme, Game, Sync)
-- [ ] T036 Create app/+not-found.tsx for 404 handling
+- [X] T035 Create app/_layout.tsx with Expo Router Stack and context providers (Theme, Game, Sync)
+- [X] T036 Create app/+not-found.tsx for 404 handling
 
 ---
 
@@ -134,23 +134,23 @@ This document breaks down the implementation into dependency-ordered, independen
 
 ### Tests (TDD: Write First)
 
-- [ ] T037 [P] [US1] Write contract test for pairingAlgorithm.ts in tests/contract/pairingAlgorithm.test.ts: verify 8 players → 4 pairs, odd players → wraparound pairing
-- [ ] T038 [P] [US1] Write contract test for bowlingRotation.ts in tests/contract/bowlingRotation.test.ts: verify 8 players → 16-over rotation, no consecutive bowler
-- [ ] T039 [P] [US1] Write contract test for scoringEngine.ts in tests/contract/scoringEngine.test.ts: verify run calculation, wicket count, over completion (6 valid balls)
-- [ ] T040 [P] [US1] Write integration test for game creation in tests/integration/createGame.test.ts: render home → tap New Game → fill form → verify Game + Teams + Players in WatermelonDB
-- [ ] T041 [P] [US1] Write integration test for scoring flow in tests/integration/scoreMatch.test.ts: create game → start innings → tap runs → verify OverEvent created + score updated
+- [X] T037 [P] [US1] Write contract test for pairingAlgorithm.ts in tests/contract/pairingAlgorithm.test.ts: verify 8 players → 4 pairs, odd players → wraparound pairing
+- [X] T038 [P] [US1] Write contract test for bowlingRotation.ts in tests/contract/bowlingRotation.test.ts: verify 8 players → 16-over rotation, no consecutive bowler
+- [X] T039 [P] [US1] Write contract test for scoringEngine.ts in tests/contract/scoringEngine.test.ts: verify run calculation, wicket count, over completion (6 valid balls)
+- [X] T040 [P] [US1] Write integration test for game creation in tests/integration/createGame.test.ts: render home → tap New Game → fill form → verify Game + Teams + Players in WatermelonDB
+- [X] T041 [P] [US1] Write integration test for scoring flow in tests/integration/scoreMatch.test.ts: create game → start innings → tap runs → verify OverEvent created + score updated
 
 ### Implementation
 
 #### Business Logic (Services)
 
-- [ ] T042 [US1] Implement pairingAlgorithm.ts in src/services/pairingAlgorithm.ts: `makePairs(players: Player[]): BattingPair[]` generating 4 pairs with 4 overs each
-- [ ] T043 [US1] Implement bowlingRotation.ts in src/services/bowlingRotation.ts: `planBowlers(players: Player[], totalOvers: number): string[]` ensuring no consecutive bowler
-- [ ] T044 [US1] Implement scoringEngine.ts in src/services/scoringEngine.ts with functions: `calculateTotalRuns()`, `calculateWickets()`, `isOverComplete()`, `getNextBowler()`
+- [X] T042 [US1] Implement pairingAlgorithm.ts in src/services/pairingAlgorithm.ts: `makePairs(players: Player[]): BattingPair[]` generating 4 pairs with 4 overs each
+- [X] T043 [US1] Implement bowlingRotation.ts in src/services/bowlingRotation.ts: `planBowlers(players: Player[], totalOvers: number): string[]` ensuring no consecutive bowler
+- [X] T044 [US1] Implement scoringEngine.ts in src/services/scoringEngine.ts with functions: `calculateTotalRuns()`, `calculateWickets()`, `isOverComplete()`, `getNextBowler()`
 
 #### Screens
 
-- [ ] T045 [US1] Create home screen in app/(tabs)/index.tsx with buttons: "New Game", "Resume Last Game", "View History"
+- [X] T045 [US1] Create home screen in app/(tabs)/index.tsx with buttons: "New Game", "Resume Last Game", "View History"
 - [ ] T046 [US1] Create game setup wizard in app/game/[id]/setup.tsx with multi-step form: team names → add players (min 8 per team) → review pairs/bowlers → start match
 - [ ] T047 [US1] Create scoring screen in app/game/[id]/scoring.tsx with ScoreDisplay, RunKeypad, ExtraButtons, UndoButton, over progress indicator
 
@@ -174,8 +174,8 @@ This document breaks down the implementation into dependency-ordered, independen
 
 #### Navigation
 
-- [ ] T057 [US1] Create app/(tabs)/_layout.tsx with bottom tab navigation: Home, History, Settings
-- [ ] T058 [US1] Create app/game/_layout.tsx with stack navigation for game screens (setup → scoring → summary)
+- [X] T057 [US1] Create app/(tabs)/_layout.tsx with bottom tab navigation: Home, History, Settings
+- [X] T058 [US1] Create app/game/_layout.tsx with stack navigation for game screens (setup → scoring → summary)
 
 ---
 
