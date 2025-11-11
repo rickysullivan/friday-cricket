@@ -2,6 +2,7 @@
  * Scoring Screen
  * Active game interface: score display, run keypad, extras, undo
  * T047 - Complete implementation
+ * T068-T070 - Rule enforcement integration
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
+  ToastAndroid,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -20,8 +23,13 @@ import ScoreDisplay from '@/components/scoring/ScoreDisplay';
 import RunKeypad from '@/components/scoring/RunKeypad';
 import ExtraButtons from '@/components/scoring/ExtraButtons';
 import UndoButton from '@/components/scoring/UndoButton';
+import SlidePanel from '@/components/ui/SlidePanel';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import {
+  validateBattingPairLimit,
+  validateInningsComplete,
+} from '@/services/ruleEngine';
 
 export default function ScoringScreen() {
   const { id } = useLocalSearchParams();
@@ -43,10 +51,72 @@ export default function ScoringScreen() {
   });
   const [ballsInOver, setBallsInOver] = useState<string[]>([]);
   const [canUndo, setCanUndo] = useState(false);
+  const [ruleWarning, setRuleWarning] = useState<string | null>(null);
+  const [showWarningPanel, setShowWarningPanel] = useState(false);
 
   const gameId = Array.isArray(id) ? id[0] : id || 'new';
   const { recordRun, recordWicket, recordExtra, undoLastEvent, advanceOver } =
     useScoring(gameId);
+
+  // T069: Check if batting pair needs auto-rotation
+  useEffect(() => {
+    const pairValidation = validateBattingPairLimit({
+      id: '1',
+      player1Id: '1',
+      player1Name: currentPair.player1,
+      player2Id: '2',
+      player2Name: currentPair.player2,
+      oversAllocated: currentPair.oversAllocated,
+      oversFaced: currentPair.oversFaced,
+    });
+
+    if (!pairValidation.isValid) {
+      // Auto-rotate to next pair
+      showToast(`${currentPair.player1} and ${currentPair.player2} have completed their overs. Rotating to next pair.`);
+      // TODO: Load next pair from database
+      setCurrentPair({
+        player1: 'Next Player 1',
+        player2: 'Next Player 2',
+        oversFaced: 0,
+        oversAllocated: 4,
+      });
+    }
+  }, [currentPair.oversFaced]);
+
+  // T070: Check innings completion after each scoring event
+  useEffect(() => {
+    const inningsCheck = validateInningsComplete({
+      id: '1',
+      oversCompleted: currentOver,
+      oversPlanned: 16,
+      wickets,
+    });
+
+    if (inningsCheck.isComplete) {
+      if (inningsCheck.reason === 'wickets') {
+        Alert.alert(
+          'Innings Complete',
+          '10 wickets have fallen. Innings is complete.',
+          [{ text: 'OK', onPress: handleInningsComplete }]
+        );
+      } else if (inningsCheck.reason === 'overs') {
+        Alert.alert(
+          'Innings Complete',
+          '16 overs completed. Innings is complete.',
+          [{ text: 'OK', onPress: handleInningsComplete }]
+        );
+      }
+    }
+  }, [currentOver, wickets]);
+
+  function showToast(message: string) {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      // iOS alternative - could use a third-party toast library
+      Alert.alert('Notice', message);
+    }
+  }
 
   async function handleRunScored(runValue: number) {
     await recordRun(runValue);
@@ -300,6 +370,24 @@ export default function ScoringScreen() {
           size="medium"
         />
       </ScrollView>
+
+      {/* T068: Rule Warning Panel */}
+      <SlidePanel
+        isVisible={showWarningPanel}
+        onClose={() => setShowWarningPanel(false)}
+        title="Rule Violation"
+      >
+        <Text style={[styles.warningText, { color: colors.error }]}>
+          {ruleWarning}
+        </Text>
+        <Button
+          title="Understood"
+          onPress={() => setShowWarningPanel(false)}
+          variant="primary"
+          size="medium"
+          style={{ marginTop: 16 }}
+        />
+      </SlidePanel>
     </SafeAreaView>
   );
 }
@@ -362,5 +450,9 @@ const styles = StyleSheet.create({
   },
   undoContainer: {
     alignItems: 'center',
+  },
+  warningText: {
+    fontSize: 16,
+    lineHeight: 24,
   },
 });

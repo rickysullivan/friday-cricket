@@ -2,6 +2,7 @@
  * Game Setup Screen
  * Multi-step wizard: team names → add players → review pairs/bowlers → start match
  * T046 - Complete implementation
+ * T071 - Bowling validation integration
  */
 
 import React, { useState, useEffect } from 'react';
@@ -23,6 +24,7 @@ import BattingPairCard from '@/components/game/BattingPairCard';
 import BowlerRotation from '@/components/game/BowlerRotation';
 import { makePairs } from '@/services/pairingAlgorithm';
 import { planBowlers } from '@/services/bowlingRotation';
+import { validateMinimumBowlingAllocation } from '@/services/ruleEngine';
 
 interface Player {
   id: string;
@@ -115,6 +117,16 @@ export default function GameSetupScreen() {
       const pairsB = makePairs(teamBPlayers);
       const bowlersA = planBowlers(teamAPlayers, 16);
       const bowlersB = planBowlers(teamBPlayers, 16);
+
+      // T071: Validate minimum bowling allocation
+      const validationA = validateMinimumBowlingAllocation(teamAPlayers, bowlersA);
+      const validationB = validateMinimumBowlingAllocation(teamBPlayers, bowlersB);
+
+      if (!validationA.isValid || !validationB.isValid) {
+        const allWarnings = [...validationA.warnings, ...validationB.warnings];
+        setError(`Bowling allocation issue:\n${allWarnings.join('\n')}`);
+        return;
+      }
 
       setTeamAPairs(pairsA);
       setTeamBPairs(pairsB);
