@@ -23,50 +23,69 @@ import {
 import { Button } from '../Button';
 import { Modal } from '../Modal';
 import { StatCard } from '../StatCard';
+import { formatGameTime, useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const ActiveGameScreen = ({
-  isPaused,
-  elapsedTime,
-  formatGameTime,
-  innings,
-  viewerCount,
-  isViewer,
-  permission,
-  requestPermission,
-  historyLength,
-  showMenu,
-  onToggleMenu,
-  onPauseGame,
-  onResumeGame,
-  onRequestEndInningsEarly,
-  onRequestEndGameEarly,
-  onRequestResetGame,
-  onUndo,
-  onCloseMenu,
-  gameId,
-  onOpenShareModal,
-  showShareModal,
-  onCloseShareModal,
-  shareUrl,
-  copiedGameId,
-  onCopyGameId,
-  isConnected,
-  modalConfig,
-  onCloseModal,
-  ballsHistory,
-  wicketPending,
-  overs,
-  currentPair,
-  currentTotalOvers,
-  currentTotalPairs,
-  totalWickets,
-  getBallColor,
-  onBadBall,
-  onWicket,
-  onGoodBall,
-  leaveGame
-}) => (
-  <div className="game-container bg-slate-100 font-sans relative">
+const ActiveGameScreen = () => {
+  const {
+    config,
+    isPaused,
+    elapsedTime,
+    innings,
+    viewerCount,
+    isViewer,
+    permission,
+    historyLength,
+    showMenu,
+    gameId,
+    showShareModal,
+    copiedGameId,
+    isConnected,
+    modalConfig,
+    ballsHistory,
+    wicketPending,
+    overs,
+    currentPair,
+    totalWickets,
+    actions
+  } = useGameStore(useShallow((state) => ({
+    config: state.config,
+    isPaused: state.isPaused,
+    elapsedTime: state.elapsedTime,
+    innings: state.innings,
+    viewerCount: state.viewerCount,
+    isViewer: state.isViewer,
+    permission: state.permission,
+    historyLength: state.history.length,
+    showMenu: state.showMenu,
+    gameId: state.gameId,
+    showShareModal: state.showShareModal,
+    copiedGameId: state.copiedGameId,
+    isConnected: state.isConnected,
+    modalConfig: state.modalConfig,
+    ballsHistory: state.ballsHistory,
+    wicketPending: state.wicketPending,
+    overs: state.overs,
+    currentPair: state.currentPair,
+    totalWickets: state.totalWickets,
+    actions: state.actions
+  })));
+
+  const currentTotalOvers = innings === 1 ? config.team1TotalOvers : config.team2TotalOvers;
+  const currentTotalPairs = innings === 1 ? config.team1Pairs : config.team2Pairs;
+  const shareUrl = gameId ? `${window.location.origin}?watch=${gameId}` : "";
+
+  const getBallColor = (type) => {
+    switch (type) {
+      case 'good': return 'bg-emerald-500 border-emerald-600';
+      case 'bad': return 'bg-amber-400 border-amber-500';
+      case 'wicket': return 'bg-rose-500 border-rose-600';
+      default: return 'bg-slate-100 border-slate-200';
+    }
+  };
+
+  return (
+    <div className="game-container bg-slate-100 font-sans relative">
     <header className="bg-white px-4 py-3 flex justify-between items-center shadow-sm border-b border-slate-200 z-10">
       <div className={`flex items-center gap-2 font-bold text-sm tabular-nums ${isPaused ? 'text-amber-600' : 'text-slate-600'}`}>
         {isPaused ? <Pause size={16} /> : <Timer size={16} />}
@@ -87,7 +106,7 @@ const ActiveGameScreen = ({
 
         {gameId && !isViewer && (
           <button
-            onClick={onOpenShareModal}
+            onClick={actions.onOpenShareModal}
             className="p-2 rounded-lg flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors"
             title="Share game"
           >
@@ -98,9 +117,9 @@ const ActiveGameScreen = ({
         {!isViewer && (
           <button
             onClick={() => {
-              if (permission !== 'granted') {
-                requestPermission();
-              }
+                if (permission !== 'granted') {
+                actions.requestPermission();
+                }
             }}
             className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
               permission === 'granted'
@@ -117,7 +136,7 @@ const ActiveGameScreen = ({
 
         {!isViewer && (
           <button
-            onClick={onUndo}
+            onClick={actions.onUndo}
             disabled={historyLength === 0}
             className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
               historyLength > 0
@@ -130,7 +149,7 @@ const ActiveGameScreen = ({
         )}
 
         {!isViewer && (
-          <button onClick={onToggleMenu} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+          <button onClick={actions.onToggleMenu} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
             <Menu size={20} />
           </button>
         )}
@@ -140,32 +159,32 @@ const ActiveGameScreen = ({
     {showMenu && !isViewer && (
       <div className="absolute top-14 right-4 z-50 bg-white rounded-xl shadow-xl border border-slate-100 p-2 w-64 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
         {isPaused ? (
-          <button onClick={onResumeGame} className="w-full text-left px-4 py-3 text-emerald-600 hover:bg-emerald-50 rounded-lg font-medium flex items-center gap-2 mb-1">
+          <button onClick={actions.onResumeGame} className="w-full text-left px-4 py-3 text-emerald-600 hover:bg-emerald-50 rounded-lg font-medium flex items-center gap-2 mb-1">
             <Play size={16} /> Resume Game
           </button>
         ) : (
-          <button onClick={onPauseGame} className="w-full text-left px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-2 mb-1">
+          <button onClick={actions.onPauseGame} className="w-full text-left px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-2 mb-1">
             <Pause size={16} /> Pause Game
           </button>
         )}
 
         {innings === 1 && (
-          <button onClick={onRequestEndInningsEarly} className="w-full text-left px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-lg font-medium flex items-center gap-2 mb-1">
+          <button onClick={actions.onRequestEndInningsEarly} className="w-full text-left px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-lg font-medium flex items-center gap-2 mb-1">
             <SkipForward size={16} /> End Innings Early
           </button>
         )}
 
-        <button onClick={onRequestEndGameEarly} className="w-full text-left px-4 py-3 text-amber-600 hover:bg-amber-50 rounded-lg font-medium flex items-center gap-2">
+        <button onClick={actions.onRequestEndGameEarly} className="w-full text-left px-4 py-3 text-amber-600 hover:bg-amber-50 rounded-lg font-medium flex items-center gap-2">
           <Power size={16} /> End Match Early
         </button>
 
-        <button onClick={onRequestResetGame} className="w-full text-left px-4 py-3 text-rose-600 hover:bg-rose-50 rounded-lg font-medium flex items-center gap-2">
+        <button onClick={actions.onRequestResetGame} className="w-full text-left px-4 py-3 text-rose-600 hover:bg-rose-50 rounded-lg font-medium flex items-center gap-2">
           <RotateCcw size={16} /> Reset Match
         </button>
 
         <div className="h-px bg-slate-100 my-1"></div>
 
-        <button onClick={onCloseMenu} className="w-full text-left px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-lg font-medium">
+        <button onClick={actions.onCloseMenu} className="w-full text-left px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-lg font-medium">
           Close Menu
         </button>
       </div>
@@ -243,9 +262,9 @@ const ActiveGameScreen = ({
 
           <button
             onClick={() => {
-              if (permission !== 'granted') {
-                requestPermission();
-              }
+                if (permission !== 'granted') {
+                actions.requestPermission();
+                }
             }}
             className={`mt-2 px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors ${
               permission === 'granted'
@@ -265,7 +284,7 @@ const ActiveGameScreen = ({
           </button>
 
           <button
-            onClick={leaveGame}
+            onClick={actions.leaveGame}
             className="mt-2 text-slate-400 hover:text-slate-600 text-sm underline"
           >
             Leave Game
@@ -276,7 +295,7 @@ const ActiveGameScreen = ({
           <Button
             variant="warning"
             className="flex-col text-center border-b-4 border-amber-500 active:border-b-0 active:mt-1 py-3"
-            onClick={onBadBall}
+            onClick={actions.onBadBall}
           >
             <AlertCircle size={24} />
             <span className="text-sm">Bad Ball<br /><span className="text-xs font-normal opacity-90">Free Hit</span></span>
@@ -285,7 +304,7 @@ const ActiveGameScreen = ({
           <Button
             variant="danger"
             className="flex-col text-center border-b-4 border-rose-600 active:border-b-0 active:mt-1 py-3"
-            onClick={onWicket}
+            onClick={actions.onWicket}
           >
             <XCircle size={24} />
             <span className="text-sm">Wicket<br /><span className="text-xs font-normal opacity-90">Change Ends</span></span>
@@ -294,7 +313,7 @@ const ActiveGameScreen = ({
           <Button
             variant="primary"
             className="col-span-2 text-xl flex-col border-b-4 border-emerald-700 active:border-b-0 active:mt-1 shadow-emerald-200 shadow-lg py-4"
-            onClick={onGoodBall}
+            onClick={actions.onGoodBall}
           >
             <span className="text-2xl">Good Ball</span>
             <span className="text-xs font-normal opacity-90 bg-emerald-600 px-3 py-1 rounded-full mt-1">
@@ -308,7 +327,7 @@ const ActiveGameScreen = ({
     <Modal
       isOpen={modalConfig.isOpen}
       title={modalConfig.title}
-      onClose={onCloseModal}
+      onClose={actions.onCloseModal}
       actionButton={modalConfig.action}
     >
       {modalConfig.content}
@@ -317,7 +336,7 @@ const ActiveGameScreen = ({
     <Modal
       isOpen={showShareModal}
       title="Share Game"
-      onClose={onCloseShareModal}
+      onClose={actions.onCloseShareModal}
     >
       <div className="space-y-6">
         <div className="flex justify-center">
@@ -338,7 +357,7 @@ const ActiveGameScreen = ({
               {gameId}
             </span>
             <button
-              onClick={onCopyGameId}
+              onClick={actions.onCopyGameId}
               className={`p-2 rounded-lg transition-colors ${
                 copiedGameId
                   ? 'bg-emerald-100 text-emerald-600'
@@ -367,6 +386,7 @@ const ActiveGameScreen = ({
       </div>
     </Modal>
   </div>
-);
+  );
+};
 
 export { ActiveGameScreen };

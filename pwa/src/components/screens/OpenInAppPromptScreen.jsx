@@ -1,17 +1,20 @@
 import React from 'react';
 import { Check, Copy, Download, Eye, Share } from 'lucide-react';
 import { Button } from '../Button';
+import { useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const OpenInAppPromptScreen = ({
-  pendingWatchId,
-  copiedGameId,
-  onCopyGameId,
-  onWatchInBrowser,
-  onCancel,
-  isInstalled,
-  isIOS
-}) => (
-  <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+const OpenInAppPromptScreen = () => {
+  const { pendingWatchId, copiedGameId, isInstalled, isIOS, actions } = useGameStore(useShallow((state) => ({
+    pendingWatchId: state.pendingWatchId,
+    copiedGameId: state.copiedGameId,
+    isInstalled: state.isInstalled,
+    isIOS: state.isIOS,
+    actions: state.actions
+  })));
+
+  return (
+    <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
     <div className="max-w-md w-full space-y-4">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
         <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
@@ -27,7 +30,7 @@ const OpenInAppPromptScreen = ({
               {pendingWatchId}
             </span>
             <button
-              onClick={onCopyGameId}
+              onClick={actions.onCopyPendingWatchId}
               className={`p-2 rounded-lg transition-colors ${
                 copiedGameId
                   ? 'bg-emerald-100 text-emerald-600'
@@ -48,14 +51,14 @@ const OpenInAppPromptScreen = ({
 
         <Button
           size="xl"
-          onClick={onWatchInBrowser}
+          onClick={actions.onWatchInBrowser}
           className="w-full mb-3"
         >
           <Eye size={20} /> Watch in Browser
         </Button>
 
         <button
-          onClick={onCancel}
+          onClick={actions.onCancelOpenInAppPrompt}
           className="text-slate-400 hover:text-slate-600 text-sm"
         >
           Cancel
@@ -76,6 +79,7 @@ const OpenInAppPromptScreen = ({
       )}
     </div>
   </div>
-);
+  );
+};
 
 export { OpenInAppPromptScreen };

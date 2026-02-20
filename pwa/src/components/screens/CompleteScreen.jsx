@@ -1,20 +1,30 @@
 import React from 'react';
 import { Timer, Trophy, Undo2 } from 'lucide-react';
 import { Button } from '../Button';
+import { formatGameTime, formatOvers, useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const CompleteScreen = ({
-  firstInningsStats,
-  elapsedTime,
-  overs,
-  ballsHistoryLength,
-  totalWickets,
-  totalBadBalls,
-  formatGameTime,
-  formatOvers,
-  onUndo,
-  historyLength,
-  onBackToHome
-}) => {
+const CompleteScreen = () => {
+  const {
+    firstInningsStats,
+    elapsedTime,
+    overs,
+    ballsHistoryLength,
+    totalWickets,
+    totalBadBalls,
+    historyLength,
+    actions
+  } = useGameStore(useShallow((state) => ({
+    firstInningsStats: state.firstInningsStats,
+    elapsedTime: state.elapsedTime,
+    overs: state.overs,
+    ballsHistoryLength: state.ballsHistory.length,
+    totalWickets: state.totalWickets,
+    totalBadBalls: state.totalBadBalls,
+    historyLength: state.history.length,
+    actions: state.actions
+  })));
+
   const totalDuration = (firstInningsStats?.duration || 0) + elapsedTime;
 
   return (
@@ -65,10 +75,10 @@ const CompleteScreen = ({
         </div>
 
         <div className="space-y-3">
-          <Button onClick={onUndo} variant="neutral" className="w-full" disabled={historyLength === 0}>
+          <Button onClick={actions.onUndo} variant="neutral" className="w-full" disabled={historyLength === 0}>
             <Undo2 size={18} /> Undo Last Action
           </Button>
-          <Button onClick={onBackToHome} variant="outline" className="w-full">
+          <Button onClick={actions.onBackToHome} variant="outline" className="w-full">
             Back to Home
           </Button>
         </div>

@@ -2,26 +2,38 @@ import React from 'react';
 import { CheckCircle2, Download, Eye, Play, Plus, Share } from 'lucide-react';
 import { Button } from '../Button';
 import { Modal } from '../Modal';
+import { useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const WelcomeScreen = ({
-  onSetup,
-  isSyncConfigured,
-  canInstall,
-  isInstalled,
-  isIOS,
-  showIOSInstall,
-  onToggleIOSInstall,
-  promptInstall,
-  showWatchModal,
-  onCloseWatchModal,
-  watchGameIdInput,
-  onWatchGameIdChange,
-  watchError,
-  isJoining,
-  onJoinGame,
-  onOpenWatchModal
-}) => (
-  <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+const WelcomeScreen = () => {
+  const {
+    isSyncConfigured,
+    canInstall,
+    isInstalled,
+    isIOS,
+    showIOSInstall,
+    showWatchModal,
+    watchGameIdInput,
+    watchError,
+    isJoining,
+    actions,
+    setShowIOSInstall
+  } = useGameStore(useShallow((state) => ({
+    isSyncConfigured: state.isSyncConfigured,
+    canInstall: state.canInstall,
+    isInstalled: state.isInstalled,
+    isIOS: state.isIOS,
+    showIOSInstall: state.showIOSInstall,
+    showWatchModal: state.showWatchModal,
+    watchGameIdInput: state.watchGameIdInput,
+    watchError: state.watchError,
+    isJoining: state.isJoining,
+    actions: state.actions,
+    setShowIOSInstall: state.setShowIOSInstall
+  })));
+
+  return (
+    <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
     <div className="max-w-md w-full space-y-4">
       <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
         <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
@@ -30,13 +42,13 @@ const WelcomeScreen = ({
         <h1 className="text-3xl font-black text-slate-800 mb-2">Friday Cricket</h1>
         <p className="text-slate-500 mb-8">Official tracker for Cambridge Junior Cricket.</p>
 
-        <Button size="xl" onClick={onSetup} className="w-full shadow-emerald-300 shadow-lg">
+        <Button size="xl" onClick={actions.onSetup} className="w-full shadow-emerald-300 shadow-lg">
           Set Up Match
         </Button>
 
         {isSyncConfigured && (
           <button
-            onClick={onOpenWatchModal}
+            onClick={actions.onOpenWatchModal}
             className="w-full mt-4 p-4 rounded-2xl font-bold flex items-center justify-center gap-3 bg-blue-50 text-blue-600 border-2 border-blue-200 active:scale-95 transition-all"
           >
             <Eye size={24} />
@@ -47,7 +59,7 @@ const WelcomeScreen = ({
 
       {canInstall && !isInstalled && (
         <button
-          onClick={promptInstall}
+          onClick={actions.promptInstall}
           className="w-full bg-blue-500 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-blue-200 active:scale-95 transition-all"
         >
           <Download size={24} />
@@ -58,7 +70,7 @@ const WelcomeScreen = ({
       {isIOS && !isInstalled && !canInstall && (
         <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
           <button
-            onClick={onToggleIOSInstall}
+            onClick={() => setShowIOSInstall(!showIOSInstall)}
             className="w-full flex items-center justify-center gap-2 text-blue-600 font-bold"
           >
             <Download size={20} />
@@ -96,7 +108,7 @@ const WelcomeScreen = ({
     <Modal
       isOpen={showWatchModal}
       title="Watch a Game"
-      onClose={onCloseWatchModal}
+      onClose={actions.onCloseWatchModal}
     >
       <div className="space-y-4">
         <div className="bg-blue-50 text-blue-700 p-4 rounded-xl flex flex-col items-center gap-2">
@@ -108,7 +120,7 @@ const WelcomeScreen = ({
           <input
             type="text"
             value={watchGameIdInput}
-            onChange={(event) => onWatchGameIdChange(event.target.value.toUpperCase())}
+            onChange={(event) => actions.onWatchGameIdChange(event.target.value.toUpperCase())}
             placeholder="e.g. ABC123"
             maxLength={6}
             className="w-full text-center text-2xl font-black tracking-widest p-4 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none uppercase"
@@ -122,7 +134,7 @@ const WelcomeScreen = ({
 
         <Button
           size="xl"
-          onClick={onJoinGame}
+          onClick={actions.onJoinGame}
           disabled={isJoining || !watchGameIdInput.trim()}
           className="w-full"
         >
@@ -135,6 +147,7 @@ const WelcomeScreen = ({
       </div>
     </Modal>
   </div>
-);
+  );
+};
 
 export { WelcomeScreen };

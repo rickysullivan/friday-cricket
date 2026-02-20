@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { AlertCircle, Power, RotateCcw, SkipForward, Trophy, Users, XCircle } from 'lucide-react';
 import { Button } from './components/Button';
 import { ActiveGameScreen } from './components/screens/ActiveGameScreen';
@@ -8,21 +8,15 @@ import { OpenInAppPromptScreen } from './components/screens/OpenInAppPromptScree
 import { ReconnectingScreen } from './components/screens/ReconnectingScreen';
 import { SetupScreen } from './components/screens/SetupScreen';
 import { WelcomeScreen } from './components/screens/WelcomeScreen';
+import { useGameSync } from './hooks/useGameSync';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useNotifications } from './hooks/useNotifications';
-import { useGameSync } from './hooks/useGameSync';
-
-// --- Main App Component ---
+import { useGameStore } from './store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function FridayCricketTracker() {
-  // Notifications
   const { permission, requestPermission, notify, pendingAction, consumeAction } = useNotifications();
-
-  // PWA Install
   const { canInstall, isInstalled, isIOS, promptInstall } = useInstallPrompt();
-  const [showIOSInstall, setShowIOSInstall] = useState(false);
-
-  // Game Sync
   const {
     gameId,
     isViewer,
@@ -34,60 +28,148 @@ export default function FridayCricketTracker() {
     joinGame,
     reconnectAsUmpire,
     syncState,
-    endGame: endSyncGame,
     subscribeToGame,
     leaveGame,
     clearError: clearSyncError
   } = useGameSync();
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [copiedGameId, setCopiedGameId] = useState(false);
-  const [showWatchModal, setShowWatchModal] = useState(false);
-  const [watchGameIdInput, setWatchGameIdInput] = useState('');
-  const [watchError, setWatchError] = useState('');
-  const [isJoining, setIsJoining] = useState(false);
 
-  // Game Configuration State
-  const [config, setConfig] = useState({
-    team1Players: 8,
-    team2Players: 8,
-    team1Pairs: 4,
-    team2Pairs: 4,
-    oversPerPair: 4,
-    team1TotalOvers: 16,
-    team2TotalOvers: 16
-  });
-
-  // Game State
-  const [gameState, setGameState] = useState('welcome'); // welcome, setup, active, halfTime, complete
-  const [innings, setInnings] = useState(1); // 1 or 2
-  // Stores { wickets, badBalls, overs, balls, duration } for innings 1
-  const [firstInningsStats, setFirstInningsStats] = useState(null); 
-  
-  const [ballsHistory, setBallsHistory] = useState([]); 
-  const [overs, setOvers] = useState(0);
-  const [totalWickets, setTotalWickets] = useState(0);
-  const [totalBadBalls, setTotalBadBalls] = useState(0);
-  const [currentPair, setCurrentPair] = useState(1);
-  const [wicketPending, setWicketPending] = useState(false);
-  const [history, setHistory] = useState([]); 
-  const [showMenu, setShowMenu] = useState(false);
-  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: null });
-
-  // Timer state
-  const [gameStartTime, setGameStartTime] = useState(null);
-  const [pausedDuration, setPausedDuration] = useState(0); // Total ms paused (including half time)
-  const [isPaused, setIsPaused] = useState(false);
-  const [pauseStartTime, setPauseStartTime] = useState(null);
-  const [halfTimeStartTime, setHalfTimeStartTime] = useState(null);
-  const [elapsedTime, setElapsedTime] = useState(0); // For display updates
+  const {
+    config,
+    gameState,
+    innings,
+    firstInningsStats,
+    ballsHistory,
+    overs,
+    totalWickets,
+    totalBadBalls,
+    currentPair,
+    wicketPending,
+    history,
+    gameStartTime,
+    pausedDuration,
+    isPaused,
+    pauseStartTime,
+    halfTimeStartTime,
+    elapsedTime,
+    watchGameIdInput,
+    pendingWatchId,
+    showOpenInAppPrompt,
+    isReconnecting,
+    applyGameState,
+    setGameState,
+    setInnings,
+    setFirstInningsStats,
+    setBallsHistory,
+    setOvers,
+    setTotalWickets,
+    setTotalBadBalls,
+    setCurrentPair,
+    setWicketPending,
+    setShowMenu,
+    setModalConfig,
+    setGameStartTime,
+    setPausedDuration,
+    setIsPaused,
+    setPauseStartTime,
+    setHalfTimeStartTime,
+    setElapsedTime,
+    setShowShareModal,
+    setCopiedGameId,
+    setShowWatchModal,
+    setWatchGameIdInput,
+    setWatchError,
+    setIsJoining,
+    setPendingWatchId,
+    setShowOpenInAppPrompt,
+    setIsReconnecting,
+    setSyncInfo,
+    setPwaInfo,
+    setPermission,
+    saveHistory,
+    resetForMatchStart,
+    goToWelcome,
+    setActions
+  } = useGameStore(useShallow((state) => ({
+    config: state.config,
+    gameState: state.gameState,
+    innings: state.innings,
+    firstInningsStats: state.firstInningsStats,
+    ballsHistory: state.ballsHistory,
+    overs: state.overs,
+    totalWickets: state.totalWickets,
+    totalBadBalls: state.totalBadBalls,
+    currentPair: state.currentPair,
+    wicketPending: state.wicketPending,
+    history: state.history,
+    gameStartTime: state.gameStartTime,
+    pausedDuration: state.pausedDuration,
+    isPaused: state.isPaused,
+    pauseStartTime: state.pauseStartTime,
+    halfTimeStartTime: state.halfTimeStartTime,
+    elapsedTime: state.elapsedTime,
+    watchGameIdInput: state.watchGameIdInput,
+    pendingWatchId: state.pendingWatchId,
+    showOpenInAppPrompt: state.showOpenInAppPrompt,
+    isReconnecting: state.isReconnecting,
+    applyGameState: state.applyGameState,
+    setGameState: state.setGameState,
+    setInnings: state.setInnings,
+    setFirstInningsStats: state.setFirstInningsStats,
+    setBallsHistory: state.setBallsHistory,
+    setOvers: state.setOvers,
+    setTotalWickets: state.setTotalWickets,
+    setTotalBadBalls: state.setTotalBadBalls,
+    setCurrentPair: state.setCurrentPair,
+    setWicketPending: state.setWicketPending,
+    setShowMenu: state.setShowMenu,
+    setModalConfig: state.setModalConfig,
+    setGameStartTime: state.setGameStartTime,
+    setPausedDuration: state.setPausedDuration,
+    setIsPaused: state.setIsPaused,
+    setPauseStartTime: state.setPauseStartTime,
+    setHalfTimeStartTime: state.setHalfTimeStartTime,
+    setElapsedTime: state.setElapsedTime,
+    setShowShareModal: state.setShowShareModal,
+    setCopiedGameId: state.setCopiedGameId,
+    setShowWatchModal: state.setShowWatchModal,
+    setWatchGameIdInput: state.setWatchGameIdInput,
+    setWatchError: state.setWatchError,
+    setIsJoining: state.setIsJoining,
+    setPendingWatchId: state.setPendingWatchId,
+    setShowOpenInAppPrompt: state.setShowOpenInAppPrompt,
+    setIsReconnecting: state.setIsReconnecting,
+    setSyncInfo: state.setSyncInfo,
+    setPwaInfo: state.setPwaInfo,
+    setPermission: state.setPermission,
+    saveHistory: state.saveHistory,
+    resetForMatchStart: state.resetForMatchStart,
+    goToWelcome: state.goToWelcome,
+    setActions: state.setActions
+  })));
 
   const BALLS_PER_OVER = 6;
-
-  // Derived values for current state
   const currentTotalOvers = innings === 1 ? config.team1TotalOvers : config.team2TotalOvers;
-  const currentTotalPairs = innings === 1 ? config.team1Pairs : config.team2Pairs;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  const closeModal = useCallback(() => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  }, [setModalConfig]);
+  const closeMenu = useCallback(() => {
+    setShowMenu(false);
+  }, [setShowMenu]);
 
-  // Game timer - updates every second when game is active
+  useEffect(() => {
+    setPermission(permission);
+  }, [permission, setPermission]);
+
+  useEffect(() => {
+    setPwaInfo({ canInstall, isInstalled, isIOS });
+  }, [canInstall, isInstalled, isIOS, setPwaInfo]);
+
+  useEffect(() => {
+    setSyncInfo({ gameId, isViewer, isConnected, viewerCount, syncError, isSyncConfigured });
+  }, [gameId, isViewer, isConnected, viewerCount, syncError, isSyncConfigured, setSyncInfo]);
+
   useEffect(() => {
     if (gameState !== 'active' || !gameStartTime || isPaused) return;
 
@@ -98,9 +180,8 @@ export default function FridayCricketTracker() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [gameState, gameStartTime, isPaused, pausedDuration]);
+  }, [gameState, gameStartTime, isPaused, pausedDuration, setElapsedTime]);
 
-  // Sync game state to Supabase when relevant state changes
   useEffect(() => {
     if (!gameId || isViewer) return;
 
@@ -119,52 +200,35 @@ export default function FridayCricketTracker() {
     };
 
     syncState(stateToSync);
-  }, [gameId, isViewer, config, gameState, innings, firstInningsStats, ballsHistory, overs, totalWickets, totalBadBalls, currentPair, elapsedTime, isPaused, syncState]);
+  }, [
+    gameId,
+    isViewer,
+    config,
+    gameState,
+    innings,
+    firstInningsStats,
+    ballsHistory,
+    overs,
+    totalWickets,
+    totalBadBalls,
+    currentPair,
+    elapsedTime,
+    isPaused,
+    syncState
+  ]);
 
-  // Check if running as installed PWA (standalone mode)
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-
-  // State for QR code landing page (when opened in browser, not PWA)
-  const [pendingWatchId, setPendingWatchId] = useState(null);
-  const [showOpenInAppPrompt, setShowOpenInAppPrompt] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
-
-  const applyGameState = useCallback((state) => {
-    if (!state) return;
-    if (state.config) setConfig(state.config);
-    if (state.gameState) setGameState(state.gameState);
-    if (state.innings !== undefined) setInnings(state.innings);
-    if (state.firstInningsStats !== undefined) setFirstInningsStats(state.firstInningsStats);
-    if (state.ballsHistory) setBallsHistory(state.ballsHistory);
-    if (state.overs !== undefined) setOvers(state.overs);
-    if (state.totalWickets !== undefined) setTotalWickets(state.totalWickets);
-    if (state.totalBadBalls !== undefined) setTotalBadBalls(state.totalBadBalls);
-    if (state.currentPair !== undefined) setCurrentPair(state.currentPair);
-    if (state.elapsedTime !== undefined) setElapsedTime(state.elapsedTime);
-    if (state.isPaused !== undefined) setIsPaused(state.isPaused);
-  }, []);
-
-  // Save game session to localStorage whenever gameId changes
   useEffect(() => {
     if (gameId && gameState !== 'welcome') {
-      const session = {
-        gameId,
-        isViewer,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('active_game_session', JSON.stringify(session));
+      localStorage.setItem('active_game_session', JSON.stringify({ gameId, isViewer, timestamp: Date.now() }));
     }
   }, [gameId, isViewer, gameState]);
 
-  // Clear session when game ends or returns to welcome
   useEffect(() => {
     if (gameState === 'welcome' && !showOpenInAppPrompt) {
       localStorage.removeItem('active_game_session');
     }
   }, [gameState, showOpenInAppPrompt]);
 
-  // Reconnect to active game on page load/refresh
   useEffect(() => {
     if (!isSyncConfigured) return;
 
@@ -173,20 +237,16 @@ export default function FridayCricketTracker() {
 
     try {
       const session = JSON.parse(savedSession);
-      // Only reconnect if session is less than 4 hours old
-      const maxAge = 4 * 60 * 60 * 1000; // 4 hours
+      const maxAge = 4 * 60 * 60 * 1000;
       if (Date.now() - session.timestamp > maxAge) {
         localStorage.removeItem('active_game_session');
         return;
       }
 
-      // Try to reconnect
       setIsReconnecting(true);
 
       const applyState = (state) => {
         applyGameState(state);
-
-        // Restore timer state for active games
         if (state?.gameState === 'active') {
           setGameStartTime(Date.now() - (state.elapsedTime || 0));
           setPausedDuration(0);
@@ -194,13 +254,11 @@ export default function FridayCricketTracker() {
       };
 
       if (session.isViewer) {
-        // Viewer: rejoin the game
         (async () => {
           try {
             const initialState = await joinGame(session.gameId);
             if (initialState) {
               applyState(initialState);
-              console.log('Reconnected as viewer to game:', session.gameId);
             } else {
               localStorage.removeItem('active_game_session');
             }
@@ -212,13 +270,11 @@ export default function FridayCricketTracker() {
           }
         })();
       } else {
-        // Umpire: reconnect using the hook
         (async () => {
           try {
             const state = await reconnectAsUmpire(session.gameId);
             if (state) {
               applyState(state);
-              console.log('Reconnected as umpire to game:', session.gameId);
             } else {
               localStorage.removeItem('active_game_session');
             }
@@ -234,60 +290,65 @@ export default function FridayCricketTracker() {
       console.error('Failed to parse saved session:', err);
       localStorage.removeItem('active_game_session');
     }
-  }, [isSyncConfigured, joinGame, reconnectAsUmpire, applyGameState]);
+  }, [
+    isSyncConfigured,
+    joinGame,
+    reconnectAsUmpire,
+    applyGameState,
+    setGameStartTime,
+    setPausedDuration,
+    setIsReconnecting
+  ]);
 
-  // Check for ?watch=GAMEID URL parameter on load
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const watchId = params.get('watch');
+    if (!watchId) return;
 
-    if (watchId) {
-      const upperWatchId = watchId.toUpperCase();
-      setWatchGameIdInput(upperWatchId);
+    const upperWatchId = watchId.toUpperCase();
+    setWatchGameIdInput(upperWatchId);
 
-      // If opened in browser (not PWA), show the "Open in App" prompt
-      if (!isStandalone) {
-        // Store in localStorage so PWA can pick it up
-        localStorage.setItem('pending_watch_game', upperWatchId);
-        setPendingWatchId(upperWatchId);
-        setShowOpenInAppPrompt(true);
-        // Clear the URL parameter
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-
-      // If in PWA, join directly
-      if (isSyncConfigured) {
-        (async () => {
-          setIsJoining(true);
-          try {
-            const initialState = await joinGame(watchId);
-            applyGameState(initialState);
-          } finally {
-            setIsJoining(false);
-          }
-        })();
-        // Clear the URL parameter
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+    if (!isStandalone) {
+      localStorage.setItem('pending_watch_game', upperWatchId);
+      setPendingWatchId(upperWatchId);
+      setShowOpenInAppPrompt(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
     }
-  }, [isSyncConfigured, joinGame, isStandalone, applyGameState]);
 
-  // Check for pending watch game from localStorage (when PWA opens after QR scan)
+    if (isSyncConfigured) {
+      (async () => {
+        setIsJoining(true);
+        try {
+          const initialState = await joinGame(watchId);
+          applyGameState(initialState);
+        } finally {
+          setIsJoining(false);
+        }
+      })();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [
+    isSyncConfigured,
+    joinGame,
+    isStandalone,
+    applyGameState,
+    setWatchGameIdInput,
+    setPendingWatchId,
+    setShowOpenInAppPrompt,
+    setIsJoining
+  ]);
+
   useEffect(() => {
     if (!isStandalone || !isSyncConfigured) return;
-
     const pendingGame = localStorage.getItem('pending_watch_game');
     if (pendingGame && gameState === 'welcome' && !isViewer) {
-      // Clear it first to prevent loops
       localStorage.removeItem('pending_watch_game');
-      // Set the input and show the modal
       setWatchGameIdInput(pendingGame);
       setShowWatchModal(true);
     }
-  }, [isStandalone, isSyncConfigured, gameState, isViewer]);
+  }, [isStandalone, isSyncConfigured, gameState, isViewer, setWatchGameIdInput, setShowWatchModal]);
 
-  // Refs to track previous values for viewer notifications (avoids re-subscription loops)
   const prevStateRef = useRef({
     overs: 0,
     totalWickets: 0,
@@ -299,21 +360,17 @@ export default function FridayCricketTracker() {
     initialized: false
   });
 
-  // Ref for notify function to avoid re-subscription
   const notifyRef = useRef(notify);
   useEffect(() => {
     notifyRef.current = notify;
   }, [notify]);
 
-  // Subscribe to realtime updates when in viewer mode
   useEffect(() => {
     if (!isViewer || !gameId) return;
 
     const unsubscribe = subscribeToGame((newState) => {
       const prev = prevStateRef.current;
       const notifyFn = notifyRef.current;
-
-      // Detect changes and send notifications
       const newOvers = newState.overs ?? prev.overs;
       const newWickets = newState.totalWickets ?? prev.totalWickets;
       const newBadBalls = newState.totalBadBalls ?? prev.totalBadBalls;
@@ -323,17 +380,12 @@ export default function FridayCricketTracker() {
       const newBallsLength = newState.ballsHistory?.length ?? prev.ballsLength;
       const totalOvers = newState.config?.team1TotalOvers || 16;
 
-      // Only send notifications after initial state is received
       if (prev.initialized) {
-        // Ball count notification (for all ball types)
         if (newBallsLength > prev.ballsLength && newBallsLength < 6) {
           const lastBallType = newState.ballsHistory?.[newBallsLength - 1];
           let ballMessage = 'Good delivery';
-          if (lastBallType === 'wicket') {
-            ballMessage = 'Wicket confirmed';
-          } else if (lastBallType === 'bad') {
-            ballMessage = 'Free hit taken';
-          }
+          if (lastBallType === 'wicket') ballMessage = 'Wicket confirmed';
+          else if (lastBallType === 'bad') ballMessage = 'Free hit taken';
           notifyFn(`Ball ${newBallsLength}/6`, {
             body: `Over ${newOvers + 1}/${totalOvers} • ${ballMessage}`,
             tag: 'ball',
@@ -341,7 +393,6 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // Wicket notification
         if (newWickets > prev.totalWickets) {
           notifyFn('WICKET!', {
             body: `Wicket #${newWickets} - Change ends`,
@@ -350,7 +401,6 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // Bad ball notification
         if (newBadBalls > prev.totalBadBalls) {
           notifyFn('Bad Ball - FREE HIT!', {
             body: `Over ${newOvers + 1}/${totalOvers}`,
@@ -359,7 +409,6 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // New batting pair notification
         if (newPair > prev.currentPair) {
           notifyFn('NEW BATTING PAIR!', {
             body: `Pair ${newPair} coming in`,
@@ -368,7 +417,6 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // Over complete notification (when balls reset to 0 and overs increase)
         if (newOvers > prev.overs && newBallsLength === 0) {
           notifyFn('Over Complete', {
             body: `Over ${newOvers}/${totalOvers} • Rotate fielders`,
@@ -377,16 +425,14 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // Half time notification
         if (newGameState === 'halfTime' && prev.gameState !== 'halfTime') {
           notifyFn('HALF TIME!', {
-            body: `1st Innings complete`,
+            body: '1st Innings complete',
             tag: 'game-phase',
             vibrate: [200, 100, 200, 100, 200, 100, 200]
           });
         }
 
-        // Second innings notification
         if (newInnings === 2 && prev.innings === 1 && newGameState === 'active') {
           notifyFn('2nd Innings Started!', {
             body: 'Game is back on',
@@ -394,7 +440,6 @@ export default function FridayCricketTracker() {
           });
         }
 
-        // Match complete notification
         if (newGameState === 'complete' && prev.gameState !== 'complete') {
           notifyFn('MATCH COMPLETE!', {
             body: 'Great game!',
@@ -404,7 +449,6 @@ export default function FridayCricketTracker() {
         }
       }
 
-      // Update previous values ref
       prevStateRef.current = {
         overs: newOvers,
         totalWickets: newWickets,
@@ -416,160 +460,15 @@ export default function FridayCricketTracker() {
         initialized: true
       };
 
-      // Apply the synced state to local state
       applyGameState(newState);
     });
 
     return unsubscribe;
   }, [isViewer, gameId, subscribeToGame, applyGameState]);
 
-  // Handle joining a game as viewer
-  const handleJoinGame = async (id = watchGameIdInput) => {
-    if (!id.trim()) {
-      setWatchError('Please enter a game ID');
-      return;
-    }
-
-    setIsJoining(true);
-    setWatchError('');
-    clearSyncError();
-
-    try {
-      const initialState = await joinGame(id);
-      if (initialState) {
-        applyGameState(initialState);
-        setShowWatchModal(false);
-        setWatchGameIdInput('');
-      } else {
-        setWatchError('Game not found');
-      }
-    } catch (err) {
-      setWatchError('Failed to join game');
-    } finally {
-      setIsJoining(false);
-    }
-  };
-
-  const handleCopyPendingWatchId = async () => {
-    if (!pendingWatchId) return;
-    try {
-      await navigator.clipboard.writeText(pendingWatchId);
-      setCopiedGameId(true);
-      setTimeout(() => setCopiedGameId(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  const handleWatchInBrowser = () => {
-    setShowOpenInAppPrompt(false);
-    setPendingWatchId(null);
-    // Don't clear localStorage - keep it for PWA
-    handleJoinGame(pendingWatchId);
-  };
-
-  const handleCancelOpenInAppPrompt = () => {
-    setShowOpenInAppPrompt(false);
-    setPendingWatchId(null);
-    localStorage.removeItem('pending_watch_game');
-  };
-
-  // Copy game ID to clipboard
-  const copyGameId = async () => {
-    if (!gameId) return;
-    try {
-      await navigator.clipboard.writeText(gameId);
-      setCopiedGameId(true);
-      setTimeout(() => setCopiedGameId(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  // Get the share URL for QR code
-  const getShareUrl = () => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}?watch=${gameId}`;
-  };
-
-  // Format elapsed time as MM:SS
-  const formatGameTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  // Pause/Resume handlers
-  const pauseGame = () => {
-    setIsPaused(true);
-    setPauseStartTime(Date.now());
-    setShowMenu(false);
-  };
-
-  const resumeGame = () => {
-    if (pauseStartTime) {
-      const pauseDuration = Date.now() - pauseStartTime;
-      setPausedDuration(prev => prev + pauseDuration);
-    }
-    setIsPaused(false);
-    setPauseStartTime(null);
-    setShowMenu(false);
-  };
-
-  // Handle undo action from notification
-  useEffect(() => {
-    if (pendingAction?.type === 'undo') {
-      console.log('Undo triggered from notification');
-      handleUndo();
-      consumeAction();
-    }
-  }, [pendingAction]);
-
-  // --- Configuration Logic ---
-  
-  const updateConfig = (key, value) => {
-    setConfig(prev => {
-      const newConfig = { ...prev, [key]: value };
-      
-      // Recalculate based on which value changed
-      if (key === 'team1Players') {
-        newConfig.team1Pairs = Math.ceil(value / 2);
-        newConfig.team1TotalOvers = newConfig.team1Pairs * newConfig.oversPerPair;
-      }
-      if (key === 'team2Players') {
-        newConfig.team2Pairs = Math.ceil(value / 2);
-        newConfig.team2TotalOvers = newConfig.team2Pairs * newConfig.oversPerPair;
-      }
-      if (key === 'oversPerPair') {
-        newConfig.team1TotalOvers = newConfig.team1Pairs * value;
-        newConfig.team2TotalOvers = newConfig.team2Pairs * value;
-      }
-      
-      return newConfig;
-    });
-  };
-
-  // --- Logic Helpers ---
-
-  const saveHistory = () => {
-    setHistory(prev => [...prev, {
-      ballsHistory: [...ballsHistory],
-      overs,
-      totalWickets,
-      totalBadBalls,
-      currentPair,
-      gameState,
-      wicketPending,
-      innings,
-      firstInningsStats,
-      config
-    }]);
-  };
-
   const handleUndo = () => {
     if (history.length === 0) return;
-    
+
     const previousState = history[history.length - 1];
     setBallsHistory(previousState.ballsHistory);
     setOvers(previousState.overs);
@@ -580,10 +479,13 @@ export default function FridayCricketTracker() {
     setWicketPending(previousState.wicketPending);
     setInnings(previousState.innings);
     setFirstInningsStats(previousState.firstInningsStats);
-    if(previousState.config) setConfig(previousState.config);
-    
-    setHistory(prev => prev.slice(0, -1));
-    setModalConfig({ isOpen: false, type: null });
+    if (previousState.config) {
+      useGameStore.setState({ config: previousState.config });
+    }
+    useGameStore.setState((state) => ({
+      history: state.history.slice(0, -1),
+      modalConfig: { isOpen: false, type: null }
+    }));
   };
 
   const checkEndOfOver = (newHistory) => {
@@ -592,38 +494,13 @@ export default function FridayCricketTracker() {
     }
   };
 
-  const formatOvers = (completedOvers, balls) => {
-    if (!balls || balls === 0) return completedOvers;
-    return `${completedOvers}.${balls}`;
-  };
-
-  // --- Event Handlers ---
-
   const goToSetup = () => {
     setGameState('setup');
   };
 
   const startGame = async () => {
-    setGameState('active');
-    setInnings(1);
-    setFirstInningsStats(null);
-    setBallsHistory([]);
-    setOvers(0);
-    setTotalWickets(0);
-    setTotalBadBalls(0);
-    setCurrentPair(1);
-    setHistory([]);
-    setWicketPending(false);
+    resetForMatchStart();
 
-    // Initialize timer
-    setGameStartTime(Date.now());
-    setPausedDuration(0);
-    setIsPaused(false);
-    setPauseStartTime(null);
-    setHalfTimeStartTime(null);
-    setElapsedTime(0);
-
-    // Create game in Supabase for syncing
     if (isSyncConfigured) {
       const initialState = {
         config,
@@ -650,21 +527,22 @@ export default function FridayCricketTracker() {
   const startSecondInnings = () => {
     saveHistory();
 
-    // Add half time duration to paused time
     if (halfTimeStartTime) {
       const halfTimeDuration = Date.now() - halfTimeStartTime;
-      setPausedDuration(prev => prev + halfTimeDuration);
+      useGameStore.setState((state) => ({ pausedDuration: state.pausedDuration + halfTimeDuration }));
       setHalfTimeStartTime(null);
     }
 
-    setGameState('active');
-    setInnings(2);
-    setBallsHistory([]);
-    setOvers(0);
-    setTotalWickets(0);
-    setTotalBadBalls(0);
-    setCurrentPair(1);
-    setWicketPending(false);
+    useGameStore.setState({
+      gameState: 'active',
+      innings: 2,
+      ballsHistory: [],
+      overs: 0,
+      totalWickets: 0,
+      totalBadBalls: 0,
+      currentPair: 1,
+      wicketPending: false
+    });
 
     notify('2nd Innings Started!', {
       body: `${config.team2TotalOvers} overs to play`,
@@ -673,7 +551,7 @@ export default function FridayCricketTracker() {
   };
 
   const requestResetGame = () => {
-    setShowMenu(false);
+    closeMenu();
     setModalConfig({
       isOpen: true,
       type: 'confirmReset',
@@ -684,21 +562,11 @@ export default function FridayCricketTracker() {
             <RotateCcw size={48} />
             <p className="font-bold text-lg">Start Over</p>
           </div>
-          <p className="text-slate-600">
-            Are you sure you want to erase all progress and return to the home screen?
-          </p>
+          <p className="text-slate-600">Are you sure you want to erase all progress and return to the home screen?</p>
         </div>
       ),
       action: (
-        <Button 
-          variant="danger" 
-          size="xl" 
-          onClick={() => {
-            setGameState('welcome');
-            setHistory([]);
-            setModalConfig({ ...modalConfig, isOpen: false });
-          }}
-        >
+        <Button variant="danger" size="xl" onClick={goToWelcome}>
           Yes, Reset Match
         </Button>
       )
@@ -706,7 +574,7 @@ export default function FridayCricketTracker() {
   };
 
   const requestEndInningsEarly = () => {
-    setShowMenu(false);
+    closeMenu();
     setModalConfig({
       isOpen: true,
       type: 'confirmEndInnings',
@@ -717,27 +585,25 @@ export default function FridayCricketTracker() {
             <SkipForward size={48} />
             <p className="font-bold text-lg">Skip to Halftime</p>
           </div>
-          <p className="text-slate-600">
-            Finish Team 1's innings now and go to the Half Time Report?
-          </p>
+          <p className="text-slate-600">Finish Team 1's innings now and go to the Half Time Report?</p>
         </div>
       ),
       action: (
-        <Button 
-          variant="purple" 
-          size="xl" 
+        <Button
+          variant="purple"
+          size="xl"
           onClick={() => {
             saveHistory();
             setFirstInningsStats({
               wickets: totalWickets,
               badBalls: totalBadBalls,
-              overs: overs,
+              overs,
               balls: ballsHistory.length,
               duration: elapsedTime
             });
             setHalfTimeStartTime(Date.now());
             setGameState('halfTime');
-            setModalConfig({ ...modalConfig, isOpen: false });
+            closeModal();
           }}
         >
           Yes, End Innings
@@ -747,8 +613,8 @@ export default function FridayCricketTracker() {
   };
 
   const requestEndGameEarly = () => {
-     setShowMenu(false);
-     setModalConfig({
+    closeMenu();
+    setModalConfig({
       isOpen: true,
       type: 'confirmEnd',
       title: 'End Match Early?',
@@ -758,19 +624,17 @@ export default function FridayCricketTracker() {
             <Power size={48} />
             <p className="font-bold text-lg">Finish Now</p>
           </div>
-          <p className="text-slate-600">
-            This will end the game immediately and show the final stats.
-          </p>
+          <p className="text-slate-600">This will end the game immediately and show the final stats.</p>
         </div>
       ),
       action: (
-        <Button 
-          variant="warning" 
-          size="xl" 
+        <Button
+          variant="warning"
+          size="xl"
           onClick={() => {
             saveHistory();
             setGameState('complete');
-            setModalConfig({ ...modalConfig, isOpen: false });
+            closeModal();
           }}
         >
           Yes, End Match
@@ -786,7 +650,6 @@ export default function FridayCricketTracker() {
     setBallsHistory(newHistory);
     setWicketPending(false);
 
-    // Notify ball count (only if not end of over - that has its own notification)
     if (newHistory.length < BALLS_PER_OVER) {
       notify(`Ball ${newHistory.length}/6`, {
         body: `Over ${overs + 1}/${currentTotalOvers} • ${type === 'wicket' ? 'Wicket confirmed' : 'Good delivery'}`,
@@ -799,8 +662,8 @@ export default function FridayCricketTracker() {
   };
 
   const handleBadBallTrigger = () => {
-    setModalConfig({ 
-      isOpen: true, 
+    setModalConfig({
+      isOpen: true,
       type: 'badBall',
       title: 'Bad Ball Detected',
       content: (
@@ -810,8 +673,8 @@ export default function FridayCricketTracker() {
             <p className="font-bold text-lg">FREE HIT!</p>
           </div>
           <p className="text-slate-600">
-            1. Place ball on the <strong>Hitting Tee</strong>.<br/>
-            2. Batter gets a free hit.<br/>
+            1. Place ball on the <strong>Hitting Tee</strong>.<br />
+            2. Batter gets a free hit.<br />
             3. This counts as the ball.
           </p>
         </div>
@@ -822,8 +685,8 @@ export default function FridayCricketTracker() {
           size="xl"
           onClick={() => {
             saveHistory();
-            setModalConfig({ ...modalConfig, isOpen: false });
-            setTotalBadBalls(prev => prev + 1);
+            closeModal();
+            setTotalBadBalls(totalBadBalls + 1);
             const newHistory = [...ballsHistory, 'bad'];
             setBallsHistory(newHistory);
             setWicketPending(false);
@@ -854,12 +717,8 @@ export default function FridayCricketTracker() {
             <XCircle size={48} />
             <p className="font-bold text-lg">BATTER IS OUT</p>
           </div>
-          <p className="text-slate-600 font-medium">
-            Batter does NOT leave the pitch.
-          </p>
-          <p className="text-lg font-bold text-slate-800">
-            Change Ends Now
-          </p>
+          <p className="text-slate-600 font-medium">Batter does NOT leave the pitch.</p>
+          <p className="text-lg font-bold text-slate-800">Change Ends Now</p>
           <div className="bg-slate-50 p-2 rounded text-xs text-slate-500 mt-2">
             (Wicket recorded. If you haven't clicked "Good Ball" yet, do it next.)
           </div>
@@ -873,7 +732,7 @@ export default function FridayCricketTracker() {
             saveHistory();
             const newWicketCount = totalWickets + 1;
             setTotalWickets(newWicketCount);
-            setModalConfig({ ...modalConfig, isOpen: false });
+            closeModal();
 
             notify('WICKET!', {
               body: `Over ${overs + 1}/${currentTotalOvers} • Wicket #${newWicketCount} - Change ends`,
@@ -904,35 +763,35 @@ export default function FridayCricketTracker() {
 
   const endOver = (currentHistory) => {
     const nextOverNum = overs + 1;
-    
-    let modalTitle = "End of Over";
+
+    let modalTitle = 'End of Over';
     let modalContent = (
       <div className="space-y-4">
-         <div className="bg-emerald-100 text-emerald-700 p-4 rounded-xl flex flex-col items-center gap-2">
-            <RotateCcw size={48} />
-            <p className="font-bold text-lg">ROTATE FIELDERS</p>
-          </div>
-          <p className="text-slate-600">
-            Everyone moves one position.<br/>
-            <strong>New Bowler</strong> from same end.
-          </p>
+        <div className="bg-emerald-100 text-emerald-700 p-4 rounded-xl flex flex-col items-center gap-2">
+          <RotateCcw size={48} />
+          <p className="font-bold text-lg">ROTATE FIELDERS</p>
+        </div>
+        <p className="text-slate-600">
+          Everyone moves one position.<br />
+          <strong>New Bowler</strong> from same end.
+        </p>
       </div>
     );
 
     const isPairChange = nextOverNum % config.oversPerPair === 0 && nextOverNum < currentTotalOvers;
-    
+
     if (isPairChange) {
-      modalTitle = "Change Batting Pair";
+      modalTitle = 'Change Batting Pair';
       modalContent = (
         <div className="space-y-4">
-           <div className="bg-blue-100 text-blue-700 p-4 rounded-xl flex flex-col items-center gap-2">
-              <Users size={48} />
-              <p className="font-bold text-lg">NEW BATTING PAIR</p>
-            </div>
-            <p className="text-slate-600">
-              Pair {currentPair} is finished.<br/>
-              <strong>Send in Pair {currentPair + 1}!</strong>
-            </p>
+          <div className="bg-blue-100 text-blue-700 p-4 rounded-xl flex flex-col items-center gap-2">
+            <Users size={48} />
+            <p className="font-bold text-lg">NEW BATTING PAIR</p>
+          </div>
+          <p className="text-slate-600">
+            Pair {currentPair} is finished.<br />
+            <strong>Send in Pair {currentPair + 1}!</strong>
+          </p>
         </div>
       );
     }
@@ -940,11 +799,11 @@ export default function FridayCricketTracker() {
     if (nextOverNum >= currentTotalOvers) {
       if (innings === 1) {
         setFirstInningsStats({
-            wickets: totalWickets,
-            badBalls: totalBadBalls,
-            overs: nextOverNum,
-            balls: 0,
-            duration: elapsedTime
+          wickets: totalWickets,
+          badBalls: totalBadBalls,
+          overs: nextOverNum,
+          balls: 0,
+          duration: elapsedTime
         });
         setHalfTimeStartTime(Date.now());
         setGameState('halfTime');
@@ -961,14 +820,14 @@ export default function FridayCricketTracker() {
           title: 'Match Complete!',
           content: (
             <div className="space-y-4">
-               <div className="bg-yellow-100 text-yellow-700 p-4 rounded-xl flex flex-col items-center gap-2">
-                  <Trophy size={48} />
-                  <p className="font-bold text-lg">GREAT GAME!</p>
-                </div>
-                <p className="text-slate-600">
-                  Both innings complete.<br/>
-                  Shake hands and pack up gear.
-                </p>
+              <div className="bg-yellow-100 text-yellow-700 p-4 rounded-xl flex flex-col items-center gap-2">
+                <Trophy size={48} />
+                <p className="font-bold text-lg">GREAT GAME!</p>
+              </div>
+              <p className="text-slate-600">
+                Both innings complete.<br />
+                Shake hands and pack up gear.
+              </p>
             </div>
           ),
           action: (
@@ -976,7 +835,7 @@ export default function FridayCricketTracker() {
               variant="primary"
               size="xl"
               onClick={() => {
-                setModalConfig({ ...modalConfig, isOpen: false });
+                closeModal();
                 setGameState('complete');
 
                 notify('MATCH COMPLETE!', {
@@ -1006,7 +865,7 @@ export default function FridayCricketTracker() {
               setBallsHistory([]);
               setWicketPending(false);
               if (isPairChange) {
-                setCurrentPair(prev => prev + 1);
+                setCurrentPair(currentPair + 1);
                 notify('NEW BATTING PAIR!', {
                   body: `Over ${nextOverNum}/${currentTotalOvers} • Pair ${currentPair + 1} coming in`,
                   tag: 'game-event',
@@ -1019,7 +878,7 @@ export default function FridayCricketTracker() {
                   vibrate: [150, 75, 150]
                 });
               }
-              setModalConfig({ ...modalConfig, isOpen: false });
+              closeModal();
             }}
           >
             Start Next Over
@@ -1029,158 +888,173 @@ export default function FridayCricketTracker() {
     }
   };
 
-  const getBallColor = (type) => {
-    switch (type) {
-      case 'good': return 'bg-emerald-500 border-emerald-600';
-      case 'bad': return 'bg-amber-400 border-amber-500';
-      case 'wicket': return 'bg-rose-500 border-rose-600';
-      default: return 'bg-slate-100 border-slate-200';
+  const pauseGame = () => {
+    setIsPaused(true);
+    setPauseStartTime(Date.now());
+    closeMenu();
+  };
+
+  const resumeGame = () => {
+    if (pauseStartTime) {
+      const pauseDelta = Date.now() - pauseStartTime;
+      useGameStore.setState((state) => ({ pausedDuration: state.pausedDuration + pauseDelta }));
+    }
+    setIsPaused(false);
+    setPauseStartTime(null);
+    closeMenu();
+  };
+
+  const handleJoinGame = useCallback(async (id = watchGameIdInput) => {
+    if (!id.trim()) {
+      setWatchError('Please enter a game ID');
+      return;
+    }
+
+    setIsJoining(true);
+    setWatchError('');
+    clearSyncError();
+
+    try {
+      const initialState = await joinGame(id);
+      if (initialState) {
+        applyGameState(initialState);
+        setShowWatchModal(false);
+        setWatchGameIdInput('');
+      } else {
+        setWatchError('Game not found');
+      }
+    } catch (err) {
+      setWatchError('Failed to join game');
+    } finally {
+      setIsJoining(false);
+    }
+  }, [watchGameIdInput, clearSyncError, joinGame, applyGameState, setShowWatchModal, setWatchGameIdInput, setWatchError, setIsJoining]);
+
+  const handleCopyPendingWatchId = async () => {
+    if (!pendingWatchId) return;
+    try {
+      await navigator.clipboard.writeText(pendingWatchId);
+      setCopiedGameId(true);
+      setTimeout(() => setCopiedGameId(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
   };
 
-  // --- Render Views ---
+  const handleWatchInBrowser = () => {
+    setShowOpenInAppPrompt(false);
+    setPendingWatchId(null);
+    handleJoinGame(pendingWatchId || '');
+  };
 
-  // Show reconnecting screen
+  const handleCancelOpenInAppPrompt = () => {
+    setShowOpenInAppPrompt(false);
+    setPendingWatchId(null);
+    localStorage.removeItem('pending_watch_game');
+  };
+
+  const copyGameId = async () => {
+    if (!gameId) return;
+    try {
+      await navigator.clipboard.writeText(gameId);
+      setCopiedGameId(true);
+      setTimeout(() => setCopiedGameId(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (pendingAction?.type === 'undo') {
+      handleUndo();
+      consumeAction();
+    }
+  }, [pendingAction, consumeAction]);
+
+  useEffect(() => {
+    setActions({
+      requestPermission,
+      promptInstall,
+      onSetup: goToSetup,
+      onStartGame: startGame,
+      onStartSecondInnings: startSecondInnings,
+      onUndo: handleUndo,
+      onToggleMenu: () => useGameStore.setState((state) => ({ showMenu: !state.showMenu })),
+      onPauseGame: pauseGame,
+      onResumeGame: resumeGame,
+      onRequestEndInningsEarly: requestEndInningsEarly,
+      onRequestEndGameEarly: requestEndGameEarly,
+      onRequestResetGame: requestResetGame,
+      onCloseMenu: closeMenu,
+      onOpenShareModal: () => setShowShareModal(true),
+      onCloseShareModal: () => setShowShareModal(false),
+      onCloseModal: closeModal,
+      onBadBall: handleBadBallTrigger,
+      onWicket: handleWicketTrigger,
+      onGoodBall: handleGoodBallClick,
+      onOpenWatchModal: () => setShowWatchModal(true),
+      onCloseWatchModal: () => {
+        setShowWatchModal(false);
+        setWatchError('');
+        setWatchGameIdInput('');
+      },
+      onJoinGame: handleJoinGame,
+      onWatchGameIdChange: (value) => {
+        setWatchGameIdInput(value);
+        setWatchError('');
+      },
+      onCopyGameId: copyGameId,
+      onCopyPendingWatchId: handleCopyPendingWatchId,
+      onWatchInBrowser: handleWatchInBrowser,
+      onCancelOpenInAppPrompt: handleCancelOpenInAppPrompt,
+      leaveGame: () => {
+        leaveGame();
+        setGameState('welcome');
+      },
+      onBackToHome: () => setGameState('welcome')
+    });
+  }, [
+    setActions,
+    startGame,
+    startSecondInnings,
+    handleJoinGame,
+    gameId,
+    pendingWatchId,
+    leaveGame,
+    setGameState,
+    closeModal,
+    closeMenu,
+    setShowShareModal,
+    setShowWatchModal,
+    setWatchError,
+    setWatchGameIdInput,
+    setShowOpenInAppPrompt,
+    setPendingWatchId
+  ]);
+
   if (isReconnecting) {
     return <ReconnectingScreen />;
   }
 
-  // Show "Open in App" prompt when QR code opened in browser
   if (showOpenInAppPrompt && pendingWatchId) {
-    return (
-      <OpenInAppPromptScreen
-        pendingWatchId={pendingWatchId}
-        copiedGameId={copiedGameId}
-        onCopyGameId={handleCopyPendingWatchId}
-        onWatchInBrowser={handleWatchInBrowser}
-        onCancel={handleCancelOpenInAppPrompt}
-        isInstalled={isInstalled}
-        isIOS={isIOS}
-      />
-    );
+    return <OpenInAppPromptScreen />;
   }
 
   if (gameState === 'welcome') {
-    return (
-      <WelcomeScreen
-        onSetup={goToSetup}
-        isSyncConfigured={isSyncConfigured}
-        canInstall={canInstall}
-        isInstalled={isInstalled}
-        isIOS={isIOS}
-        showIOSInstall={showIOSInstall}
-        onToggleIOSInstall={() => setShowIOSInstall((prev) => !prev)}
-        promptInstall={promptInstall}
-        showWatchModal={showWatchModal}
-        onCloseWatchModal={() => {
-          setShowWatchModal(false);
-          setWatchError('');
-          setWatchGameIdInput('');
-        }}
-        watchGameIdInput={watchGameIdInput}
-        onWatchGameIdChange={(value) => {
-          setWatchGameIdInput(value);
-          setWatchError('');
-        }}
-        watchError={watchError}
-        isJoining={isJoining}
-        onJoinGame={handleJoinGame}
-        onOpenWatchModal={() => setShowWatchModal(true)}
-      />
-    );
+    return <WelcomeScreen />;
   }
 
   if (gameState === 'setup') {
-    return (
-      <SetupScreen
-        permission={permission}
-        requestPermission={requestPermission}
-        config={config}
-        updateConfig={updateConfig}
-        onStartGame={startGame}
-      />
-    );
+    return <SetupScreen />;
   }
 
   if (gameState === 'halfTime') {
-    return (
-      <HalfTimeScreen
-        firstInningsStats={firstInningsStats}
-        totalWickets={totalWickets}
-        totalBadBalls={totalBadBalls}
-        formatGameTime={formatGameTime}
-        formatOvers={formatOvers}
-        onStartSecondInnings={startSecondInnings}
-        onUndo={handleUndo}
-        historyLength={history.length}
-      />
-    );
+    return <HalfTimeScreen />;
   }
 
   if (gameState === 'complete') {
-    return (
-      <CompleteScreen
-        firstInningsStats={firstInningsStats}
-        elapsedTime={elapsedTime}
-        overs={overs}
-        ballsHistoryLength={ballsHistory.length}
-        totalWickets={totalWickets}
-        totalBadBalls={totalBadBalls}
-        formatGameTime={formatGameTime}
-        formatOvers={formatOvers}
-        onUndo={handleUndo}
-        historyLength={history.length}
-        onBackToHome={() => setGameState('welcome')}
-      />
-    );
+    return <CompleteScreen />;
   }
 
-  // Active Game View
-  return (
-    <ActiveGameScreen
-      isPaused={isPaused}
-      elapsedTime={elapsedTime}
-      formatGameTime={formatGameTime}
-      innings={innings}
-      viewerCount={viewerCount}
-      isViewer={isViewer}
-      permission={permission}
-      requestPermission={requestPermission}
-      historyLength={history.length}
-      showMenu={showMenu}
-      onToggleMenu={() => setShowMenu((prev) => !prev)}
-      onPauseGame={pauseGame}
-      onResumeGame={resumeGame}
-      onRequestEndInningsEarly={requestEndInningsEarly}
-      onRequestEndGameEarly={requestEndGameEarly}
-      onRequestResetGame={requestResetGame}
-      onUndo={handleUndo}
-      onCloseMenu={() => setShowMenu(false)}
-      gameId={gameId}
-      onOpenShareModal={() => setShowShareModal(true)}
-      showShareModal={showShareModal}
-      onCloseShareModal={() => setShowShareModal(false)}
-      shareUrl={getShareUrl()}
-      copiedGameId={copiedGameId}
-      onCopyGameId={copyGameId}
-      isConnected={isConnected}
-      modalConfig={modalConfig}
-      onCloseModal={() => setModalConfig({ ...modalConfig, isOpen: false })}
-      ballsHistory={ballsHistory}
-      wicketPending={wicketPending}
-      overs={overs}
-      currentPair={currentPair}
-      currentTotalOvers={currentTotalOvers}
-      currentTotalPairs={currentTotalPairs}
-      totalWickets={totalWickets}
-      getBallColor={getBallColor}
-      onBadBall={handleBadBallTrigger}
-      onWicket={handleWicketTrigger}
-      onGoodBall={handleGoodBallClick}
-      leaveGame={() => {
-        leaveGame();
-        setGameState('welcome');
-      }}
-    />
-  );
+  return <ActiveGameScreen />;
 }

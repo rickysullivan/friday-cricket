@@ -1,18 +1,20 @@
 import React from 'react';
 import { ArrowRightLeft, Coffee, Timer, Undo2 } from 'lucide-react';
 import { Button } from '../Button';
+import { formatGameTime, formatOvers, useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const HalfTimeScreen = ({
-  firstInningsStats,
-  totalWickets,
-  totalBadBalls,
-  formatGameTime,
-  formatOvers,
-  onStartSecondInnings,
-  onUndo,
-  historyLength
-}) => (
-  <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
+const HalfTimeScreen = () => {
+  const { firstInningsStats, totalWickets, totalBadBalls, historyLength, actions } = useGameStore(useShallow((state) => ({
+    firstInningsStats: state.firstInningsStats,
+    totalWickets: state.totalWickets,
+    totalBadBalls: state.totalBadBalls,
+    historyLength: state.history.length,
+    actions: state.actions
+  })));
+
+  return (
+    <div className="screen bg-slate-100 flex flex-col items-center justify-center p-6 text-center font-sans">
     <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border border-blue-100">
       <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
         <Coffee size={32} />
@@ -55,13 +57,13 @@ const HalfTimeScreen = ({
         </div>
       </div>
 
-      <Button size="xl" onClick={onStartSecondInnings} className="w-full mb-3">
+      <Button size="xl" onClick={actions.onStartSecondInnings} className="w-full mb-3">
         Start 2nd Innings
       </Button>
 
       <Button
         variant="neutral"
-        onClick={onUndo}
+        onClick={actions.onUndo}
         className="w-full"
         disabled={historyLength === 0}
       >
@@ -69,6 +71,7 @@ const HalfTimeScreen = ({
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 export { HalfTimeScreen };

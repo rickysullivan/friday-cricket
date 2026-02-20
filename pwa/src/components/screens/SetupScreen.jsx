@@ -1,25 +1,29 @@
 import React from 'react';
 import { Bell, BellOff, Minus, Plus } from 'lucide-react';
 import { Button } from '../Button';
+import { useGameStore } from '../../store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 
-const SetupScreen = ({
-  permission,
-  requestPermission,
-  config,
-  updateConfig,
-  onStartGame
-}) => (
-  <div className="screen bg-slate-100 flex flex-col items-center p-4 font-sans">
+const SetupScreen = () => {
+  const { permission, config, updateConfig, actions } = useGameStore(useShallow((state) => ({
+    permission: state.permission,
+    config: state.config,
+    updateConfig: state.updateConfig,
+    actions: state.actions
+  })));
+
+  return (
+    <div className="screen bg-slate-100 flex flex-col items-center p-4 font-sans">
     <div className="w-full bg-white p-4 rounded-3xl shadow-xl border border-slate-100">
       <h2 className="text-2xl font-black text-slate-800 mb-6 text-center">Match Setup</h2>
 
       {permission !== 'granted' && (
         <button
-          onClick={async () => {
-            console.log('Requesting notification permission...');
-            const result = await requestPermission();
-            console.log('Permission result:', result);
-          }}
+            onClick={async () => {
+              console.log('Requesting notification permission...');
+              const result = await actions.requestPermission();
+              console.log('Permission result:', result);
+            }}
           className={`w-full mb-6 p-4 rounded-xl flex items-center justify-center gap-3 font-bold transition-all ${
             permission === 'denied'
               ? 'bg-rose-100 text-rose-700 border border-rose-200'
@@ -106,11 +110,12 @@ const SetupScreen = ({
         </div>
       </div>
 
-      <Button size="xl" onClick={onStartGame} className="w-full">
+      <Button size="xl" onClick={actions.onStartGame} className="w-full">
         Start Match
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 export { SetupScreen };
