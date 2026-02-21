@@ -3,6 +3,7 @@ import { Bell, BellOff, Minus, Plus } from 'lucide-react';
 import { Button } from '../Button';
 import { useGameStore } from '../../store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
+import { GAME_VARIANTS, getVariantProfile } from '../../lib/gameVariants';
 
 const SetupScreen = () => {
   const { permission, config, updateConfig, actions } = useGameStore(useShallow((state) => ({
@@ -11,6 +12,7 @@ const SetupScreen = () => {
     updateConfig: state.updateConfig,
     actions: state.actions
   })));
+  const variantProfile = getVariantProfile(config.gameVariant);
 
   return (
     <div className="screen bg-slate-100 flex flex-col items-center p-4 font-sans">
@@ -51,17 +53,46 @@ const SetupScreen = () => {
         </div>
       )}
 
+      <div className="mb-6">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Game Type</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant={config.gameVariant === GAME_VARIANTS.STANDARD ? 'primary' : 'neutral'}
+            onClick={() => updateConfig('gameVariant', GAME_VARIANTS.STANDARD)}
+            className="w-full"
+          >
+            Friday Cricket
+          </Button>
+          <Button
+            variant={config.gameVariant === GAME_VARIANTS.TRANSITION ? 'primary' : 'neutral'}
+            onClick={() => updateConfig('gameVariant', GAME_VARIANTS.TRANSITION)}
+            className="w-full"
+          >
+            Transition Cricket
+          </Button>
+        </div>
+        <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 space-y-1">
+          <p>{variantProfile.description}</p>
+          <p>
+            Team size: <strong>{variantProfile.minPlayers}-{variantProfile.maxPlayers}</strong> players per side
+          </p>
+          <p>
+            Innings length: <strong>{variantProfile.totalOvers}</strong> overs each
+          </p>
+        </div>
+      </div>
+
       <div className="mb-4">
         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Team 1 Players</label>
         <div className="flex items-center justify-between bg-slate-50 rounded-xl p-2 border border-slate-200">
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('team1Players', Math.max(4, config.team1Players - 1))}>
+          <Button size="icon" variant="neutral" onClick={() => updateConfig('team1Players', Math.max(variantProfile.minPlayers, config.team1Players - 1))}>
             <Minus size={18} />
           </Button>
           <div className="text-center">
             <div className="text-2xl font-black text-slate-800">{config.team1Players}</div>
             <div className="text-xs text-slate-500">{config.team1Pairs} pairs</div>
           </div>
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('team1Players', Math.min(16, config.team1Players + 1))}>
+          <Button size="icon" variant="neutral" onClick={() => updateConfig('team1Players', Math.min(variantProfile.maxPlayers, config.team1Players + 1))}>
             <Plus size={18} />
           </Button>
         </div>
@@ -70,32 +101,29 @@ const SetupScreen = () => {
       <div className="mb-6">
         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Team 2 Players</label>
         <div className="flex items-center justify-between bg-slate-50 rounded-xl p-2 border border-slate-200">
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('team2Players', Math.max(4, config.team2Players - 1))}>
+          <Button size="icon" variant="neutral" onClick={() => updateConfig('team2Players', Math.max(variantProfile.minPlayers, config.team2Players - 1))}>
             <Minus size={18} />
           </Button>
           <div className="text-center">
             <div className="text-2xl font-black text-slate-800">{config.team2Players}</div>
             <div className="text-xs text-slate-500">{config.team2Pairs} pairs</div>
           </div>
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('team2Players', Math.min(16, config.team2Players + 1))}>
+          <Button size="icon" variant="neutral" onClick={() => updateConfig('team2Players', Math.min(variantProfile.maxPlayers, config.team2Players + 1))}>
             <Plus size={18} />
           </Button>
         </div>
       </div>
 
       <div className="mb-8">
-        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Overs Per Pair</label>
-        <div className="flex items-center justify-between bg-slate-50 rounded-xl p-2 border border-slate-200">
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('oversPerPair', Math.max(2, config.oversPerPair - 1))}>
-            <Minus size={18} />
-          </Button>
-          <div className="text-center">
-            <div className="text-2xl font-black text-slate-800">{config.oversPerPair}</div>
-            <div className="text-xs text-slate-500">overs each</div>
-          </div>
-          <Button size="icon" variant="neutral" onClick={() => updateConfig('oversPerPair', Math.min(6, config.oversPerPair + 1))}>
-            <Plus size={18} />
-          </Button>
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Pair Rotation Guide</label>
+        <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-sm text-slate-600">
+          <div>Approx. {config.oversPerPair} overs per pair</div>
+          {config.gameVariant === GAME_VARIANTS.TRANSITION && (
+            <div className="text-xs text-slate-500 mt-1">For odd numbers, coach decides whether a pair stays in or swaps.</div>
+          )}
+          {config.gameVariant === GAME_VARIANTS.STANDARD && (
+            <div className="text-xs text-slate-500 mt-1">Standard games target up to 4 overs per pair.</div>
+          )}
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import { WelcomeScreen } from './components/screens/WelcomeScreen';
 import { useGameSync } from './hooks/useGameSync';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useNotifications } from './hooks/useNotifications';
+import { getPairChangeOver, getVariantProfile } from './lib/gameVariants';
 import { useGameStore } from './store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -148,6 +149,7 @@ export default function FridayCricketTracker() {
   })));
 
   const BALLS_PER_OVER = 6;
+  const variantProfile = getVariantProfile(config.gameVariant);
   const currentTotalOvers = innings === 1 ? config.team1TotalOvers : config.team2TotalOvers;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
@@ -778,7 +780,9 @@ export default function FridayCricketTracker() {
       </div>
     );
 
-    const isPairChange = nextOverNum % config.oversPerPair === 0 && nextOverNum < currentTotalOvers;
+    const totalPairs = innings === 1 ? config.team1Pairs : config.team2Pairs;
+    const nextPairChangeOver = getPairChangeOver(currentPair, totalPairs, currentTotalOvers);
+    const isPairChange = nextPairChangeOver !== null && nextOverNum === nextPairChangeOver && nextOverNum < currentTotalOvers;
 
     if (isPairChange) {
       modalTitle = 'Change Batting Pair';
@@ -791,6 +795,7 @@ export default function FridayCricketTracker() {
           <p className="text-slate-600">
             Pair {currentPair} is finished.<br />
             <strong>Send in Pair {currentPair + 1}!</strong>
+            {variantProfile.id === 'transition' && <><br />Coach can decide rotation if needed.</>}
           </p>
         </div>
       );

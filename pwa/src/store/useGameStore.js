@@ -1,14 +1,13 @@
 import { create } from "zustand";
+import { GAME_VARIANTS, normalizeGameConfig } from "../lib/gameVariants";
 
-const initialConfig = {
+const initialConfig = normalizeGameConfig({
+  gameVariant: GAME_VARIANTS.STANDARD,
   team1Players: 8,
   team2Players: 8,
   team1Pairs: 4,
-  team2Pairs: 4,
-  oversPerPair: 4,
-  team1TotalOvers: 16,
-  team2TotalOvers: 16
-};
+  team2Pairs: 4
+});
 
 const noopAsync = async () => null;
 const noop = () => {};
@@ -105,7 +104,7 @@ export const useGameStore = create((set) => ({
     set((state) => ({ actions: { ...state.actions, ...nextActions } }));
   },
 
-  setConfig: (config) => set({ config }),
+  setConfig: (config) => set({ config: normalizeGameConfig(config) }),
   setGameState: (gameState) => set({ gameState }),
   setInnings: (innings) => set({ innings }),
   setFirstInningsStats: (firstInningsStats) => set({ firstInningsStats }),
@@ -145,22 +144,8 @@ export const useGameStore = create((set) => ({
 
   updateConfig: (key, value) => {
     set((state) => {
-      const newConfig = { ...state.config, [key]: value };
-
-      if (key === "team1Players") {
-        newConfig.team1Pairs = Math.ceil(value / 2);
-        newConfig.team1TotalOvers = newConfig.team1Pairs * newConfig.oversPerPair;
-      }
-      if (key === "team2Players") {
-        newConfig.team2Pairs = Math.ceil(value / 2);
-        newConfig.team2TotalOvers = newConfig.team2Pairs * newConfig.oversPerPair;
-      }
-      if (key === "oversPerPair") {
-        newConfig.team1TotalOvers = newConfig.team1Pairs * value;
-        newConfig.team2TotalOvers = newConfig.team2Pairs * value;
-      }
-
-      return { config: newConfig };
+      const nextConfig = normalizeGameConfig({ ...state.config, [key]: value });
+      return { config: nextConfig };
     });
   },
 
@@ -216,7 +201,7 @@ export const useGameStore = create((set) => ({
   applyGameState: (nextState) => {
     if (!nextState) return;
     set((state) => ({
-      config: nextState.config ?? state.config,
+      config: normalizeGameConfig(nextState.config ?? state.config),
       gameState: nextState.gameState ?? state.gameState,
       innings: nextState.innings ?? state.innings,
       firstInningsStats: nextState.firstInningsStats ?? state.firstInningsStats,
