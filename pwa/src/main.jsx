@@ -304,8 +304,39 @@ export default function FridayCricketTracker() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const watchId = params.get('watch');
-    if (!watchId) return;
+    let watchId = params.get('watch');
+    let intent = params.get('intent');
+    const protocolPayload = params.get('protocol');
+
+    if (protocolPayload) {
+      try {
+        const decoded = decodeURIComponent(protocolPayload);
+        const parsed = new URL(decoded);
+        if (parsed.protocol === 'web+wickety:') {
+          const host = parsed.hostname.toLowerCase();
+          const pathParts = parsed.pathname.split('/').filter(Boolean);
+          const pathHead = (pathParts[0] || '').toLowerCase();
+          if (host === 'start' || pathHead === 'start') {
+            intent = 'start';
+          }
+          if (host === 'watch' || pathHead === 'watch') {
+            watchId = pathParts[1] || parsed.searchParams.get('game') || parsed.searchParams.get('id') || watchId;
+          }
+        }
+      } catch {
+      }
+    }
+
+    if (!watchId) {
+      if (intent === 'watch' && gameState === 'welcome' && isSyncConfigured) {
+        setShowWatchModal(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (intent === 'start' && gameState === 'welcome') {
+        setGameState('setup');
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      return;
+    }
 
     const upperWatchId = watchId.toUpperCase();
     setWatchGameIdInput(upperWatchId);
@@ -322,7 +353,7 @@ export default function FridayCricketTracker() {
       (async () => {
         setIsJoining(true);
         try {
-          const initialState = await joinGame(watchId);
+          const initialState = await joinGame(upperWatchId);
           applyGameState(initialState);
         } finally {
           setIsJoining(false);
@@ -334,7 +365,10 @@ export default function FridayCricketTracker() {
     isSyncConfigured,
     joinGame,
     isStandalone,
+    gameState,
     applyGameState,
+    setGameState,
+    setShowWatchModal,
     setWatchGameIdInput,
     setPendingWatchId,
     setShowOpenInAppPrompt,
@@ -721,7 +755,7 @@ export default function FridayCricketTracker() {
           </div>
           <p className="text-slate-600 font-medium">Batter does NOT leave the pitch.</p>
           <p className="text-lg font-bold text-slate-800">Change Ends Now</p>
-          <div className="bg-slate-50 p-2 rounded text-xs text-slate-500 mt-2">
+          <div className="bg-slate-50 p-2 rounded text-sm text-slate-600 mt-2 leading-5">
             (Wicket recorded. If you haven't clicked "Good Ball" yet, do it next.)
           </div>
         </div>
@@ -958,16 +992,54 @@ export default function FridayCricketTracker() {
     localStorage.removeItem('pending_watch_game');
   };
 
-  const copyGameId = async () => {
-    if (!gameId) return;
+  const getShareUrl = useCallback(() => {
+    if (!gameId) return '';
+
     try {
-      await navigator.clipboard.writeText(gameId);
+      const url = new URL(window.location.href);
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('watch', gameId);
+      return url.toString();
+    } catch {
+      return `${window.location.origin}${window.location.pathname}?watch=${gameId}`;
+    }
+  }, [gameId]);
+
+  const copyGameId = useCallback(async () => {
+    const shareUrl = getShareUrl();
+    if (!shareUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
       setCopiedGameId(true);
       setTimeout(() => setCopiedGameId(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
-  };
+  }, [getShareUrl, setCopiedGameId]);
+
+  const shareGame = useCallback(async () => {
+    const shareUrl = getShareUrl();
+    if (!shareUrl) return;
+
+    if (typeof navigator.share !== 'function') {
+      await copyGameId();
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: 'Wickety Cricket',
+        text: `Join my game with code ${gameId}`,
+        url: shareUrl
+      });
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        console.error('Failed to share:', err);
+      }
+    }
+  }, [copyGameId, gameId, getShareUrl]);
 
   useEffect(() => {
     if (pendingAction?.type === 'undo') {
@@ -1009,6 +1081,7 @@ export default function FridayCricketTracker() {
         setWatchError('');
       },
       onCopyGameId: copyGameId,
+      onShareGame: shareGame,
       onCopyPendingWatchId: handleCopyPendingWatchId,
       onWatchInBrowser: handleWatchInBrowser,
       onCancelOpenInAppPrompt: handleCancelOpenInAppPrompt,
@@ -1022,7 +1095,9 @@ export default function FridayCricketTracker() {
     setActions,
     startGame,
     startSecondInnings,
+    copyGameId,
     handleJoinGame,
+    shareGame,
     gameId,
     pendingWatchId,
     leaveGame,

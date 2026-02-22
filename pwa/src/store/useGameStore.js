@@ -94,6 +94,7 @@ export const useGameStore = create((set) => ({
     onJoinGame: noopAsync,
     onWatchGameIdChange: noop,
     onCopyGameId: noopAsync,
+    onShareGame: noopAsync,
     onCopyPendingWatchId: noopAsync,
     onWatchInBrowser: noop,
     onCancelOpenInAppPrompt: noop,

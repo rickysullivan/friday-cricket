@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   AlertCircle,
@@ -73,7 +73,19 @@ const ActiveGameScreen = () => {
 
   const currentTotalOvers = innings === 1 ? config.team1TotalOvers : config.team2TotalOvers;
   const currentTotalPairs = innings === 1 ? config.team1Pairs : config.team2Pairs;
-  const shareUrl = gameId ? `${window.location.origin}?watch=${gameId}` : "";
+  const shareUrl = useMemo(() => {
+    if (!gameId) return '';
+
+    try {
+      const url = new URL(window.location.href);
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('watch', gameId);
+      return url.toString();
+    } catch {
+      return `${window.location.origin}${window.location.pathname}?watch=${gameId}`;
+    }
+  }, [gameId]);
 
   const getBallColor = (type) => {
     switch (type) {
@@ -98,7 +110,7 @@ const ActiveGameScreen = () => {
 
       <div className="flex items-center gap-1">
         {viewerCount > 0 && (
-          <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full text-xs font-bold">
+          <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full text-sm font-bold">
             <Eye size={14} />
             {viewerCount}
           </div>
@@ -222,7 +234,7 @@ const ActiveGameScreen = () => {
                 className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${colorClass} ${isActive ? 'scale-110' : ''}`}
               >
                 {isActive && type === 'good' && <CheckCircle2 size={16} className="text-white" />}
-                {isActive && type === 'bad' && <span className="text-amber-900 font-bold text-xs">FH</span>}
+                {isActive && type === 'bad' && <span className="text-amber-900 font-bold text-sm">FH</span>}
                 {isActive && type === 'wicket' && <X size={16} className="text-white" />}
 
                 {index === ballsHistory.length && wicketPending && (
@@ -237,9 +249,9 @@ const ActiveGameScreen = () => {
           <div className="text-5xl font-black text-slate-800 tabular-nums">
             {ballsHistory.length}<span className="text-2xl text-slate-300">/6</span>
           </div>
-          <div className="text-slate-400 font-medium uppercase tracking-wide text-xs">Balls Delivered</div>
+          <div className="text-slate-500 font-medium uppercase tracking-wide text-sm">Balls Delivered</div>
           {wicketPending && (
-            <div className="text-rose-500 font-bold text-xs mt-1 animate-pulse">
+            <div className="text-rose-500 font-bold text-sm mt-1 animate-pulse">
               Next ball = Wicket
             </div>
           )}
@@ -298,7 +310,7 @@ const ActiveGameScreen = () => {
             onClick={actions.onBadBall}
           >
             <AlertCircle size={24} />
-            <span className="text-sm">Bad Ball<br /><span className="text-xs font-normal opacity-90">Free Hit</span></span>
+            <span className="text-base">Bad Ball<br /><span className="text-sm font-normal opacity-90">Free Hit</span></span>
           </Button>
 
           <Button
@@ -307,7 +319,7 @@ const ActiveGameScreen = () => {
             onClick={actions.onWicket}
           >
             <XCircle size={24} />
-            <span className="text-sm">Wicket<br /><span className="text-xs font-normal opacity-90">Change Ends</span></span>
+            <span className="text-base">Wicket<br /><span className="text-sm font-normal opacity-90">Change Ends</span></span>
           </Button>
 
           <Button
@@ -316,7 +328,7 @@ const ActiveGameScreen = () => {
             onClick={actions.onGoodBall}
           >
             <span className="text-2xl">Good Ball</span>
-            <span className="text-xs font-normal opacity-90 bg-emerald-600 px-3 py-1 rounded-full mt-1">
+            <span className="text-sm font-normal opacity-90 bg-emerald-600 px-3 py-1 rounded-full mt-1">
               {wicketPending ? 'Confirm Wicket & Count' : 'Regular Delivery'}
             </span>
           </Button>
@@ -351,11 +363,15 @@ const ActiveGameScreen = () => {
         </div>
 
         <div className="text-center">
-          <p className="text-slate-500 text-sm mb-2">Scan QR code or share Game ID:</p>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl font-black tracking-widest text-slate-800 bg-slate-100 px-4 py-2 rounded-xl">
-              {gameId}
-            </span>
+          <p className="text-slate-500 text-sm mb-2">Scan QR code or share this link:</p>
+          <div className="bg-slate-100 text-slate-700 text-xs sm:text-sm px-3 py-2 rounded-xl break-all">
+            {shareUrl}
+          </div>
+          <p className="text-slate-400 text-xs mt-2">Game code: {gameId}</p>
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <Button variant="outline" size="sm" onClick={actions.onShareGame}>
+              <Share size={16} /> Share
+            </Button>
             <button
               onClick={actions.onCopyGameId}
               className={`p-2 rounded-lg transition-colors ${
@@ -363,14 +379,14 @@ const ActiveGameScreen = () => {
                   ? 'bg-emerald-100 text-emerald-600'
                   : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
-              title="Copy game ID"
+              title="Copy share link"
             >
               {copiedGameId ? <Check size={20} /> : <Copy size={20} />}
             </button>
           </div>
         </div>
 
-        <div className="text-center text-slate-400 text-xs">
+        <div className="text-center text-slate-500 text-sm">
           {isConnected ? (
             <span className="flex items-center justify-center gap-1">
               <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
